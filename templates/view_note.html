@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ note.subject }}</title>
+</head>
+<body>
+    <h1>{{ note.subject }}</h1>
+
+    <pre>{{ note.content }}</pre>
+
+    <br>
+    <a href="/download/{{ note.id }}">Download PDF</a><br><br>
+    <a href="/history">Back</a> |
+    <a href="/logout">Logout</a>
+</body>
+</html>

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Notes Maker</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+        }
+        .container {
+            width: 700px;
+            margin: 40px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+        }
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 12px;
+            font-size: 15px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+        button {
+            width: 100%;
+            margin-top: 15px;
+            padding: 12px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .pdf-btn {
+            background: #2196F3;
+        }
+        pre {
+            background: #eef3ff;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 10px;
+            white-space: pre-wrap;
+            min-height: 200px;
+        }
+    </style>
+</head>
+
+<body>
+    {% if session.user %}
+    <div style="text-align:right;">
+        <img src="{{ session.user.avatar }}" width="30" style="border-radius:50%;">
+        {{ session.user.username }}
+        <a href="/logout">Logout</a>
+    </div>
+{% else %}
+    <a href="/login">
+        <button>🔐 Login with GitHub</button>
+    </a>
+{% endif %}
+
+
+<div class="container">
+    <h2>🧠 AI Notes Generator (Streaming + PDF)</h2>
+
+    <form id="promptForm">
+        <textarea id="prompt" placeholder="Write your prompt here...
+Example:
+Create exam notes on Photosynthesis
+Use bullet points
+Simple language"></textarea>
+
+        <button type="submit">Generate Notes</button>
+    </form>
+
+    <pre id="output"></pre>
+
+    <!-- PDF FORM -->
+    <form method="POST" action="/download">
+        <input type="hidden" name="content" id="pdfContent">
+        <button type="submit" class="pdf-btn">⬇ Download PDF</button>
+    </form>
+</div>
+
+<script>
+document.getElementById("promptForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const prompt = document.getElementById("prompt").value;
+    const output = document.getElementById("output");
+    const pdfContent = document.getElementById("pdfContent");
+
+    output.textContent = "⏳ Generating...\n\n";
+    pdfContent.value = "";
+
+    const response = await fetch("/stream", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: prompt })
+    });
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+
+    while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        const text = decoder.decode(value);
+        output.textContent += text;
+        pdfContent.value += text;   // SAVE STREAM FOR PDF
+    }
+});
+</script>
+
+</body>
+</html>
+
