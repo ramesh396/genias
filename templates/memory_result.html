@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>🧠 Memory Result</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg-main: #1a0d08;
+  --bg-card: #120805;
+  --border-soft: rgba(255,180,120,0.18);
+
+  --primary: #ff9f4a;
+  --primary-hover: #ff8a1f;
+  --success: #22c55e;
+  --warning: #facc15;
+  --danger: #ef4444;
+
+  --text-main: #f5ede7;
+  --text-muted: #d1b5a0;
+}
+
+/* ================= BASE ================= */
+body {
+  font-family: Inter, system-ui, sans-serif;
+  background: radial-gradient(circle at top, #2a140a, #120805 65%);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ================= CARD ================= */
+.card {
+  width: 92%;
+  max-width: 420px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 24px;
+  padding: 28px 22px 90px;
+  text-align: center;
+
+  box-shadow:
+    0 30px 80px rgba(0,0,0,0.65),
+    inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+/* ================= HEADINGS ================= */
+h1 {
+  font-size: 1.5rem;
+  margin-bottom: 6px;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+/* ================= CIRCLE ================= */
+.circle-wrap {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  margin: 0 auto 18px;
+}
+
+svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.bg {
+  stroke: rgba(255,255,255,0.08);
+  stroke-width: 12;
+  fill: none;
+}
+
+.progress {
+  stroke: var(--primary);
+  stroke-width: 12;
+  fill: none;
+  stroke-linecap: round;
+  stroke-dasharray: 471;
+  stroke-dashoffset: calc(471 - (471 * {{ percentage }}) / 100);
+  transition: stroke-dashoffset 1.2s ease;
+}
+
+.percent-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+  font-weight: 900;
+}
+
+/* ================= RESULT TEXT ================= */
+.label {
+  font-size: 17px;
+  font-weight: 900;
+  margin-top: 6px;
+}
+
+.desc {
+  font-size: 13.5px;
+  color: var(--text-muted);
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+/* ================= ACTION BAR ================= */
+.actions {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(to top, rgba(18,8,5,0.98), rgba(18,8,5,0.85));
+  border-top: 1px solid var(--border-soft);
+  display: flex;
+  gap: 12px;
+}
+
+/* ================= BUTTONS ================= */
+.btn {
+  flex: 1;
+  padding: 14px;
+  border-radius: 16px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  color: #1a0d08;
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid var(--border-soft);
+  color: var(--text-main);
+}
+
+/* ================= DESKTOP ================= */
+@media (min-width: 700px) {
+  .card {
+    padding-bottom: 28px;
+  }
+
+  .actions {
+    position: static;
+    background: none;
+    border: none;
+    margin-top: 30px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+  <h1>🧠 Memory Strength</h1>
+  <p class="subtitle">Based on active recall performance</p>
+
+  <div class="circle-wrap">
+    <svg viewBox="0 0 180 180">
+      <circle class="bg" cx="90" cy="90" r="75"></circle>
+      <circle class="progress" cx="90" cy="90" r="75"></circle>
+    </svg>
+    <div class="percent-text">{{ percentage }}%</div>
+  </div>
+
+  {% if percentage < 40 %}
+    <div class="label" style="color:var(--danger)">Weak Retention</div>
+    <div class="desc">Revise again today. Repetition will strengthen memory.</div>
+  {% elif percentage < 70 %}
+    <div class="label" style="color:var(--warning)">Good Retention</div>
+    <div class="desc">You remember most concepts. Revise after 24 hours.</div>
+  {% else %}
+    <div class="label" style="color:var(--success)">Strong Memory</div>
+    <div class="desc">Excellent recall. You are exam-ready for this topic.</div>
+  {% endif %}
+</div>
+
+<div class="actions">
+  <a href="/memory" class="btn btn-secondary">🔁 Another Test</a>
+  <a href="/dashboard" class="btn btn-primary">🏠 Dashboard</a>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>🧠 Memory Test</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+/* ================= RESET ================= */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ================= THEME ================= */
+:root {
+  --bg-main: #1a0d08;
+  --bg-panel: #24120a;
+  --bg-card: #120805;
+
+  --border-soft: rgba(255, 180, 120, 0.18);
+
+  --primary: #ff9f4a;
+  --primary-hover: #ff8a1f;
+  --green: #22c55e;
+
+  --text-main: #f5ede7;
+  --text-muted: #d1b5a0;
+}
+
+/* ================= BASE ================= */
+body {
+  font-family: Inter, system-ui, sans-serif;
+  background: radial-gradient(circle at top, #2a140a, #120805 65%);
+  color: var(--text-main);
+}
+
+/* ================= CONTAINER ================= */
+.container {
+  max-width: 860px;
+  margin: auto;
+  padding: 28px 14px 110px;
+}
+
+/* ================= HEADER ================= */
+h1 {
+  font-size: 1.55rem;
+  margin-bottom: 6px;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+
+/* ================= INSTRUCTION ================= */
+.instruction {
+  background: rgba(255,159,74,0.10);
+  border-left: 4px solid var(--primary);
+  padding: 12px 14px;
+  border-radius: 14px;
+  font-size: 13px;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+/* ================= QUESTION CARD ================= */
+.question-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 18px;
+  padding: 16px;
+  margin-bottom: 18px;
+}
+
+/* ================= QUESTION ================= */
+.question-title {
+  font-weight: 800;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+/* ================= TEXTAREA ================= */
+textarea {
+  width: 100%;
+  min-height: 90px;
+  background: var(--bg-panel);
+  color: var(--text-main);
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  padding: 14px;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+/* ================= VOICE BUTTON ================= */
+.voice-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid var(--border-soft);
+  background: rgba(255,255,255,0.05);
+  color: var(--text-main);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.voice-btn.active {
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  color: #1a0d08;
+}
+
+/* ================= STICKY SUBMIT ================= */
+.submit-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 14px;
+  background: var(--bg-panel);
+  border-top: 1px solid var(--border-soft);
+  box-shadow: 0 -12px 30px rgba(0,0,0,0.5);
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 18px;
+  border: none;
+  font-size: 16px;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--green), #16a34a);
+  color: #052e16;
+}
+
+/* ================= DESKTOP ================= */
+@media (min-width: 768px) {
+  .container {
+    padding-bottom: 40px;
+  }
+
+  .submit-bar {
+    position: static;
+    box-shadow: none;
+    background: transparent;
+    padding: 0;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1>🧠 Memory Test</h1>
+  <p class="subtitle">Answer from memory. Don’t check notes.</p>
+
+  <div class="instruction">
+    🎤 <b>Oral Recall</b><br>
+    Tap <b>Record Answer</b>, speak clearly. Text fills automatically.
+  </div>
+
+  <form method="POST" action="/memory/submit">
+
+   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    {% for q in questions %}
+    <div class="question-card">
+      <div class="question-title">
+        Q{{ loop.index }}. {{ q }}
+      </div>
+
+      <textarea
+        name="answer{{ loop.index }}"
+        placeholder="Type or speak your answer..."></textarea>
+
+      <button type="button" class="voice-btn" onclick="startVoice(this)">
+        🎙 Record Answer
+      </button>
+    </div>
+    {% endfor %}
+
+    <div class="submit-bar">
+      <button type="submit" class="submit-btn">
+        ✅ Submit Memory Test
+      </button>
+    </div>
+
+  </form>
+</div>
+<script>
+let mediaRecorder, audioChunks = [], activeTextarea, activeButton;
+
+async function startVoice(btn) {
+
+  // If already recording → stop
+  if (mediaRecorder && mediaRecorder.state === "recording") {
+    mediaRecorder.stop();
+    return;
+  }
+
+  activeButton = btn;
+  activeTextarea = btn.previousElementSibling;
+
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+  mediaRecorder = new MediaRecorder(stream);
+  audioChunks = [];
+
+  mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+
+  mediaRecorder.onstop = async () => {
+
+    btn.classList.remove("active");
+    btn.innerText = "🎙 Record Answer";
+
+    const blob = new Blob(audioChunks, { type: "audio/webm" });
+
+    const formData = new FormData();
+    formData.append("audio", blob);
+
+    try {
+
+      // -------- USE YOUR EXISTING GROQ STT ROUTE --------
+      const res = await fetch("/speech_to_text", {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await res.json();
+
+      activeTextarea.value = data.text || "[Could not recognize speech]";
+
+    } catch (err) {
+      activeTextarea.value = "[Voice recognition error]";
+    }
+
+    stream.getTracks().forEach(t => t.stop());
+  };
+
+  mediaRecorder.start();
+
+  btn.classList.add("active");
+  btn.innerText = "⏹ Stop Recording";
+}
+</script>
+
+</body>
+</html>

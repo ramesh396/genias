@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>AI Tutor</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: "Inter", system-ui, sans-serif;
+    background: radial-gradient(circle at top, #241208 0%, #120907 55%);
+    color: #f7efe9;
+
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+h2 {
+    padding: 14px;
+    text-align: center;
+    font-weight: 900;
+
+    background: linear-gradient(135deg, #ffb066, #ff9f4a, #ff8a1f);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+#chatbox {
+    flex: 1;
+    width: 100%;
+    overflow-y: auto;
+
+    padding: 16px 10%;
+    background: #0c0604;
+}
+
+.msg {
+    margin: 10px 0;
+    padding: 14px;
+    border-radius: 16px;
+    font-size: 15px;
+    line-height: 1.7;
+    max-width: 78%;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.user {
+    background: #2d1a14;
+    margin-left: auto;
+    text-align: left;
+}
+
+.ai {
+    background: #1a0f0b;
+    margin-right: auto;
+}
+
+#inputArea {
+    width: 100%;
+    padding: 14px;
+
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+
+    background: #1a0f0b;
+    border-top: 1px solid rgba(255, 176, 120, 0.12);
+}
+
+textarea, select {
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 176, 120, 0.12);
+    background: #120907;
+    color: #f7efe9;
+}
+
+#question {
+    flex: 1;
+    min-width: 250px;
+    height: 80px;
+    resize: none;
+}
+
+button {
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+
+    background: linear-gradient(135deg, #ffb066, #ff9f4a, #ff8a1f);
+    color: #2a1408;
+}
+
+.status {
+    font-size: 13px;
+    color: #ffb066;
+}
+
+/* -------- CHATGPT STYLE PLUS BUTTON -------- */
+
+.plus-container {
+    position: relative;
+}
+
+.plus-btn {
+    width: 40px;
+    height: 40px;
+
+    border-radius: 50%;
+    font-size: 22px;
+    font-weight: bold;
+
+    background: #1a0f0b;
+    color: #ffb066;
+
+    border: 1px solid rgba(255, 176, 120, 0.3);
+
+    cursor: pointer;
+
+    transition: all 0.3s ease;
+}
+
+.plus-btn:hover {
+    background: #2d1a14;
+    transform: scale(1.05);
+}
+
+.upload-menu {
+    position: absolute;
+
+    bottom: 50px;
+    left: 0;
+
+    background: #1a0f0b;
+    border: 1px solid rgba(255, 176, 120, 0.2);
+
+    border-radius: 12px;
+
+    display: none;
+
+    padding: 10px;
+    min-width: 160px;
+
+    z-index: 100;
+}
+
+.upload-option {
+    display: block;
+
+    padding: 10px;
+
+    cursor: pointer;
+
+    color: #f7efe9;
+
+    border-radius: 8px;
+
+    transition: all 0.2s ease;
+}
+
+.upload-option input {
+    display: none;
+}
+
+.upload-option:hover {
+    background: #2d1a14;
+}
+
+/* Image Preview */
+
+#imagePreview {
+    display: none;
+    text-align: center;
+    margin: 10px;
+}
+
+#previewImg {
+    max-width: 180px;
+    border-radius: 12px;
+    border: 2px solid rgba(255, 176, 120, 0.3);
+}
+
+.upload-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 10px;
+
+    cursor: pointer;
+
+    color: #f7efe9;
+
+    border-radius: 8px;
+
+    transition: all 0.2s ease;
+}
+
+.upload-option:hover {
+    background: #2d1a14;
+}
+
+</style>
+</head>
+<body>
+
+<h2>AI Interactive Tutor</h2>
+
+<div id="chatbox"></div>
+
+<!-- Image Preview Section -->
+<div id="imagePreview">
+    <img id="previewImg">
+</div>
+<div id="inputArea">
+
+    <!-- PLUS MENU -->
+    <div class="plus-container">
+        <button class="plus-btn" onclick="toggleUploadMenu(event)">+</button>
+
+        <div id="uploadMenu" class="upload-menu">
+
+            <label class="upload-option">
+                📷 Upload Image
+                <input type="file" id="imageInput" accept="image/*" onchange="uploadImage()">
+            </label>
+
+            <div class="upload-option" onclick="togglePushToTalk()">
+                🎙 Toggle Push-to-Talk
+            </div>
+
+            <div class="upload-option" onclick="viewProgress()">
+                📊 My Progress
+            </div>
+
+            <div class="upload-option" onclick="clearChat()">
+                🗑 Clear Chat
+            </div>
+            
+            <div class="upload-option" onclick="setGreetingName()">
+             🧑 Change Greeting Name
+         </div>
+
+        </div>
+    </div>
+
+    <!-- MAIN INPUT -->
+    <textarea id="question"
+        placeholder="Ask anything, paste a lesson, or speak..."></textarea>
+
+    <!-- LANGUAGE SELECT -->
+    <select id="languageSelect">
+        <option value="en">English 🇮🇳</option>
+        <option value="hi">Hindi 🇮🇳</option>
+        <option value="kn">Kannada 🇮🇳</option>
+    </select>
+
+  <!-- VOICE GENDER SELECTOR -->
+<div id="genderMode">
+
+    <button id="maleBtn" onclick="setGender('male')">
+        👨 Male Voice
+    </button>
+
+    <button id="femaleBtn" onclick="setGender('female')">
+        👩 Female Voice
+    </button>
+
+</div>
+
+<!-- Hidden Voice Select (used internally) -->
+<select id="voiceType" style="display:none">
+</select>
+  
+
+   <!-- VOICE GENDER SELECTOR -->
+<select id="voiceType" style="display:none">
+    <option value="en-IN-Neural2-A">South Indian English Female</option>
+    <option value="en-IN-Neural2-B">South Indian English Male</option>
+
+    <option value="kn-IN-Standard-A">Kannada Female</option>
+    <option value="kn-IN-Standard-B">Kannada Male</option>
+
+    <option value="hi-IN-Neural2-A">Hindi Female</option>
+    <option value="hi-IN-Neural2-B">Hindi Male</option>
+</select>
+
+
+    <!-- MAIN ACTION BUTTONS -->
+    <button onclick="send()">Ask</button>
+
+    <button onclick="sendContinue()">Continue</button>
+
+    <button onclick="interrupt()">Ask Doubt</button>
+
+    <button onclick="startVoice()">🎤 Speak</button>
+
+    <!-- STATUS -->
+    <div id="typing" class="status" style="display:none">
+        AI is thinking...
+    </div>
+
+    <div id="status" class="status">
+        Ready to listen...
+    </div>
+
+</div>
+
+
+</div>
+<script>
+let inDoubtMode = false;
+let resumeAfterDoubt = false;
+let aiCurrentlySpeaking = false;
+let autoListening = false;
+let pushToTalk = true;
+
+let geminiRunning = false;
+
+let chatbox = document.getElementById("chatbox");
+let currentAudio = null;
+let mediaRecorder;
+let audioChunks = [];
+
+// Reset doubt mode when user types manually
+document.addEventListener("DOMContentLoaded", function () {
+    document.getElementById("question").addEventListener("input", function () {
+        inDoubtMode = false;
+    });
+});
+
+// -------- PUSH TO TALK TOGGLE --------
+function toggleUploadMenu(event) {
+
+    event.stopPropagation();
+
+    let menu = document.getElementById("uploadMenu");
+
+    if (!menu) return;
+
+    if (menu.style.display === "block") {
+        menu.style.display = "none";
+    } else {
+        menu.style.display = "block";
+    }
+}
+
+// -------- ADD MESSAGE --------
+function addMessage(text, sender) {
+
+    if (sender === "user" && inDoubtMode) return;
+
+    let div = document.createElement("div");
+    div.className = "msg " + sender;
+
+    let time = new Date().toLocaleTimeString();
+
+    let indicator = inDoubtMode ? " 🔍 (Doubt Mode)" : "";
+
+    div.innerHTML = `
+        <div>${text}${indicator}</div>
+        <div style="font-size:11px; opacity:0.6; margin-top:5px">${time}</div>
+    `;
+
+    chatbox.appendChild(div);
+    chatbox.scrollTop = chatbox.scrollHeight;
+}
+
+// -------- SPEAK FUNCTION --------
+function speak(text) {
+
+    if (!text || text.includes("Welcome to AI Interactive Tutor")) {
+        resumeAfterDoubt = false;
+    }
+
+    stopVoice();
+
+    let selectedVoice = document.getElementById("voiceType").value;
+
+    currentAudio = new Audio(
+        "/voice?text=" + encodeURIComponent(text) +
+        "&voice=" + selectedVoice
+    );
+
+    aiCurrentlySpeaking = true;
+
+    currentAudio.play();
+
+    currentAudio.onended = async function () {
+
+        aiCurrentlySpeaking = false;
+
+        if (resumeAfterDoubt) {
+
+            resumeAfterDoubt = false;
+
+            let lang = document.getElementById("languageSelect").value;
+
+            let askMsg = "Should I continue the lesson? Please say YES or NO.";
+
+            if (lang === "hi") {
+                askMsg = "क्या मैं पाठ जारी रखूँ? कृपया हाँ या ना बोलिए।";
+            } else if (lang === "kn") {
+                askMsg = "ಪಾಠವನ್ನು ಮುಂದುವರಿಸಬಹುದೇ? ದಯವಿಟ್ಟು ಹೌದು ಅಥವಾ ಇಲ್ಲ ಎಂದು ಹೇಳಿ.";
+            }
+
+            addMessage(askMsg, "ai");
+            speak(askMsg);
+
+            setTimeout(async () => {
+                let permission = await listenForSpeech();
+                handlePermission(permission);
+            }, 2500);
+        }
+    };
+}
+
+// -------- MAIN AUTO MODE --------
+async function geminiMode() {
+
+    if (geminiRunning) return;
+
+    geminiRunning = true;
+
+    while (autoListening && !pushToTalk && !inDoubtMode) {
+
+        let userText = await listenForSpeech();
+
+        if (!userText) continue;
+
+        await processUserInput(userText);
+    }
+
+    geminiRunning = false;
+}
+
+// -------- PROCESS USER INPUT --------
+async function processUserInput(text) {
+
+    if (aiCurrentlySpeaking) {
+
+        inDoubtMode = true;
+        resumeAfterDoubt = true;
+
+        await fetch("/tutor/pause", { method: "POST" });
+
+        let lang = document.getElementById("languageSelect").value;
+
+        let msg = "Okay 😊 I stopped. What is your doubt? Tell me in your own words.";
+
+        if (lang === "hi") {
+            msg = "ठीक है! आपका क्या संदेह है? आराम से बताइए, मैं समझाकर मदद करूंगा।";
+        } else if (lang === "kn") {
+            msg = "ಸರಿ! ನಿಮ್ಮ ಅನುಮಾನ ಏನು? ನಿಧಾನವಾಗಿ ಹೇಳಿ, ನಾನು ಸ್ಪಷ್ಟವಾಗಿ ಸಹಾಯ ಮಾಡುತ್ತೇನೆ.";
+        }
+
+        addMessage(msg, "ai");
+        speak(msg);
+
+        return;
+    }
+
+    document.getElementById("question").value = text;
+
+    await send();
+}
+
+// -------- SEND TO BACKEND --------
+async function send() {
+
+    let q = document.getElementById("question").value;
+
+    if (!q.trim()) return;
+
+    if (q !== "continue") {
+        inDoubtMode = false;
+    }
+
+    if (!inDoubtMode) {
+        addMessage(q, "user");
+    }
+
+    document.getElementById("typing").style.display = "block";
+
+    let lang = document.getElementById("languageSelect").value;
+
+    let type = "question";
+
+    if (q.length > 120) {
+        type = "lesson";
+    }
+
+    if (/[0-9+\-*/=]/.test(q)) {
+        q = "Solve this problem step by step like a caring teacher: " + q;
+    }
+
+    let res = await fetch("/tutor/ask", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            question: q,
+            language: lang,
+            input_type: type
+        })
+    });
+
+    let data = await res.json();
+
+    document.getElementById("typing").style.display = "none";
+
+    addMessage(data.answer, "ai");
+
+    speak(cleanForSpeech(data.answer));
+
+    document.getElementById("question").value = "";
+}
+
+// -------- CONTINUE AFTER DOUBT --------
+function sendContinue() {
+
+    aiCurrentlySpeaking = false;
+    inDoubtMode = false;
+    resumeAfterDoubt = false;
+    autoListening = true;
+
+    document.getElementById("question").value = "continue";
+    send();
+}
+
+// -------- MANUAL INTERRUPT BUTTON --------
+async function interrupt() {
+
+    stopVoice();
+
+    inDoubtMode = true;
+
+    autoListening = false;
+    pushToTalk = true;
+
+    let lang = document.getElementById("languageSelect").value;
+
+    let msg = "What is your doubt? Please tell me.";
+
+    if (lang === "hi") {
+        msg = "आपका संदेह क्या है? बोलिए।";
+    } else if (lang === "kn") {
+        msg = "ನಿಮ್ಮ ಅನುಮಾನ ಏನು? ಹೇಳಿ.";
+    }
+
+    addMessage(msg, "ai");
+    speak(msg);
+
+    await fetch("/tutor/pause", { method: "POST" });
+
+    document.getElementById("question").value = "";
+
+    setTimeout(() => {
+        startVoice();
+    }, 2000);
+}
+
+// -------- CLEAR CHAT --------
+function clearChat() {
+    fetch("/tutor/clear");
+    chatbox.innerHTML = "";
+}
+
+// -------- SPEECH CLEANUP --------
+function cleanForSpeech(text) {
+
+    text = text.replace(/#+/g, "");
+    text = text.replace(/[*_]/g, "");
+    text = text.replace(/[-•]/g, "");
+    text = text.replace(/\s+/g, " ").trim();
+
+    return text;
+}
+
+// -------- LISTEN FOR SPEECH --------
+async function listenForSpeech() {
+
+    return new Promise(async (resolve) => {
+
+        try {
+
+            document.getElementById("status").innerText = "🎤 Listening to you...";
+
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+            mediaRecorder = new MediaRecorder(stream);
+
+            audioChunks = [];
+
+            mediaRecorder.ondataavailable = event => {
+                audioChunks.push(event.data);
+            };
+
+            mediaRecorder.onstop = async () => {
+
+                document.getElementById("status").innerText = "Understanding your words...";
+
+                const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
+
+                let formData = new FormData();
+                formData.append("audio", audioBlob, "audio.wav");
+
+                let res = await fetch("/speech_to_text", {
+                    method: "POST",
+                    body: formData
+                });
+
+                let data = await res.json();
+
+                document.getElementById("status").innerText = "";
+
+                let spokenText = data.text || "";
+
+                if (!spokenText.trim()) {
+                    resolve("");
+                    return;
+                }
+
+                spokenText = spokenText.trim();
+
+                if (spokenText.toLowerCase().includes("continue")) {
+                    resolve("continue");
+                    return;
+                }
+
+                resolve(spokenText);
+            };
+
+            mediaRecorder.start();
+
+            setTimeout(() => {
+                if (mediaRecorder.state === "recording") {
+                    mediaRecorder.stop();
+                }
+            }, 6000);
+
+        } catch (err) {
+            resolve("");
+        }
+    });
+}
+
+// -------- PUSH TO TALK START --------
+function startVoice() {
+
+    listenForSpeech().then(text => {
+
+        if (!text) return;
+
+        if (text === "continue") {
+            sendContinue();
+            return;
+        }
+
+        processUserInput(text);
+    });
+}
+
+// -------- STOP VOICE --------
+function stopVoice() {
+
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+    }
+
+    if (mediaRecorder) {
+        mediaRecorder.stop();
+    }
+}
+
+async function viewProgress() {
+
+    let res = await fetch("/tutor/progress_api");
+
+    let data = await res.json();
+
+    let text = "Your Learning Progress:\n\n";
+
+    data.forEach(d => {
+        text += "- " + d.topic + " (" + d.language + ")\n";
+    });
+
+    addMessage(text, "ai");
+}
+
+// -------- INIT --------
+window.onload = async function() {
+
+    inDoubtMode = false;
+    resumeAfterDoubt = false;
+    aiCurrentlySpeaking = false;
+    autoListening = false;
+    pushToTalk = true;
+
+    // Get username from backend
+    let res = await fetch("/tutor/get_username");
+    let data = await res.json();
+
+    let userName = data.username || "Student";
+
+    // If user already set a custom name, use that
+    let customName = localStorage.getItem("ai_greet_name");
+
+    if (customName) {
+        userName = customName;
+    }
+
+    let hour = new Date().getHours();
+
+    let greeting = "";
+
+    if (hour >= 5 && hour < 12) {
+        greeting = "Good Morning ";
+    }
+    else if (hour >= 12 && hour < 14) {
+        greeting = "Good Afternoon ";
+    }
+    else if (hour >= 17 && hour < 21) {
+        greeting = "Good Evening ";
+    }
+    else {
+        greeting = "Good Night ";
+    }
+
+    let welcomeText =
+        greeting + ", " + userName + "! \n" +
+        "Welcome to AI Interactive Tutor.\n" +
+        "I am here to help you learn.\n" ;
+
+    addMessage(welcomeText, "ai");
+
+    setTimeout(() => {
+        speak(welcomeText);
+    }, 800);
+};
+
+async function setGreetingName() {
+
+    let name = prompt("What name should I call you?");
+
+    if (!name) return;
+
+    localStorage.setItem("ai_greet_name", name);
+
+    await fetch("/tutor/set_nickname", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: name })
+    });
+
+    addMessage("Okay! I will greet you as " + name + " from now on 😊", "ai");
+}
+document.addEventListener("click", function(event) {
+
+    let menu = document.getElementById("uploadMenu");
+    let plusBtn = document.querySelector(".plus-btn");
+
+    if (!menu || !plusBtn) return;
+
+    if (!menu.contains(event.target) && !plusBtn.contains(event.target)) {
+        menu.style.display = "none";
+    }
+});
+
+function setGender(type){
+
+    let lang = document.getElementById("languageSelect").value;
+    let voiceSelect = document.getElementById("voiceType");
+
+    let maleBtn = document.getElementById("maleBtn");
+    let femaleBtn = document.getElementById("femaleBtn");
+
+    // ----- SOUTH INDIAN OPTIMIZED VOICES -----
+
+    if(type === "male"){
+
+        if(lang === "en"){
+            // South Indian English Male
+            voiceSelect.value = "en-IN-Neural2-B";
+        }
+        else if(lang === "hi"){
+            // Clear Indian Hindi Male
+            voiceSelect.value = "hi-IN-Neural2-B";
+        }
+        else if(lang === "kn"){
+            // Natural Kannada Male
+            voiceSelect.value = "kn-IN-Standard-B";
+        }
+
+        maleBtn.style.background = "#ff9f4a";
+        femaleBtn.style.background = "#1a0f0b";
+    }
+
+    else if(type === "female"){
+
+        if(lang === "en"){
+            // South Indian English Female
+            voiceSelect.value = "en-IN-Neural2-A";
+        }
+        else if(lang === "hi"){
+            // Clear Indian Hindi Female
+            voiceSelect.value = "hi-IN-Neural2-A";
+        }
+        else if(lang === "kn"){
+            // Natural Kannada Female
+            voiceSelect.value = "kn-IN-Standard-A";
+        }
+
+        femaleBtn.style.background = "#ff9f4a";
+        maleBtn.style.background = "#1a0f0b";
+    }
+
+    localStorage.setItem("voice_gender", type);
+}
+
+if(savedGender){
+    setGender(savedGender);
+}
+else{
+    setGender("female");
+}
+
+</script>
+</body>
+</html>

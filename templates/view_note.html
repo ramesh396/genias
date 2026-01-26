@@ -1,16 +1,257 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>{{ note.subject }}</title>
+  <title>{{ note.lesson }}</title>
+
+  <style>
+  /* ================= RESET ================= */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ================= THEME (SAME AS INDEX) ================= */
+:root {
+  --bg-main: #1a0d08;
+  --bg-panel: #24120a;
+  --bg-card: #120805;
+
+  --border-soft: rgba(255, 180, 120, 0.18);
+
+  --primary: #f97316;
+  --primary-hover: #ea580c;
+
+  --text-main: #f5ede7;
+  --text-muted: #d1b5a0;
+}
+
+/* ================= BASE ================= */
+body {
+  font-family: Inter, system-ui, sans-serif;
+  background: radial-gradient(circle at top, #2a140a, #120805 65%);
+  min-height: 100vh;
+  margin: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: var(--text-main);
+}
+
+/* ================= NOTE BOX ================= */
+.note-box {
+  width: 92%;
+  max-width: 960px;
+
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 24px;
+
+  padding: 34px 28px;
+
+  box-shadow:
+    0 30px 80px rgba(0,0,0,0.65),
+    inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+/* ================= TITLE ================= */
+.note-box h2 {
+  margin-top: 0;
+  margin-bottom: 22px;
+
+  font-size: 1.6rem;
+  font-weight: 800;
+
+  color: var(--text-main);
+
+  border-bottom: 1px solid var(--border-soft);
+  padding-bottom: 14px;
+}
+
+/* ================= NOTE CONTENT ================= */
+.note-content {
+  white-space: normal;
+  line-height: 1.75;
+  font-size: 15px;
+  color: var(--text-main);
+}
+
+/* Paragraphs */
+p {
+  margin: 6px 0;
+  line-height: 1.7;
+}
+
+/* Lists */
+li {
+  margin: 4px 0 4px 20px;
+  line-height: 1.6;
+}
+
+/* Section Headings (Definition, Key Points, etc.) */
+h3 {
+  margin: 18px 0 8px;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+/* ================= ACTIONS ================= */
+.actions {
+  margin-top: 30px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+
+  border-top: 1px solid var(--border-soft);
+  padding-top: 18px;
+}
+
+/* ================= LINKS ================= */
+.action-links a {
+  text-decoration: none;
+  margin-right: 16px;
+
+  font-weight: 700;
+  font-size: 14px;
+
+  color: var(--primary);
+}
+
+.action-links a:hover {
+  color: var(--primary-hover);
+}
+
+/* ================= BUTTON ================= */
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  color: #1a0d08;
+
+  border: none;
+  padding: 10px 18px;
+  border-radius: 12px;
+
+  font-size: 14px;
+  font-weight: 800;
+
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 32px rgba(249,115,22,0.45);
+}
+
+/* ================= LOCKED ================= */
+.locked {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ================= BACK LINK ================= */
+.back-link {
+  font-size: 14px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.back-link:hover {
+  color: var(--text-main);
+}
+
+/* ================= MOBILE ================= */
+@media (max-width: 600px) {
+
+  .note-box {
+    padding: 26px 18px;
+  }
+
+  .note-box h2 {
+    font-size: 1.35rem;
+  }
+
+  .actions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .action-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+}
+
+  </style>
 </head>
+
 <body>
-    <h1>{{ note.subject }}</h1>
 
-    <pre>{{ note.content }}</pre>
+<div class="note-box">
+  <h2>{{ note.lesson }}</h2>
+  <div class="note-content">
+  {% for line in note.content.split('\n') %}
+    {% set l = line.strip() %}
+    {% if not l %}
+      {# skip empty lines #}
 
-    <br>
-    <a href="/download/{{ note.id }}">Download PDF</a><br><br>
-    <a href="/history">Back</a> |
-    <a href="/logout">Logout</a>
+    {% elif l.lower().startswith('definition') %}
+      <h3>Definition</h3>
+
+    {% elif l.lower().startswith('key') %}
+      <h3>Key Points</h3>
+
+    {% elif l.lower().startswith('exam') %}
+      <h3>Exam Points</h3>
+
+    {% elif l.lower().startswith('example') %}
+      <h3>Example</h3>
+
+    {% elif l.startswith('-') or l[0].isdigit() %}
+      <li>{{ l.lstrip('-0123456789. ') }}</li>
+
+    {% else %}
+      <p>{{ l }}</p>
+    {% endif %}
+  {% endfor %}
+</div>
+
+
+  <div class="actions">
+    <div class="action-links">
+      <a href="/edit/{{ note.id }}">Edit</a>
+    {% if plan == "pro" %}
+  <a href="/download/{{ note.id }}" class="btn-primary">📄 Download PDF</a>
+{% else %}
+  <button class="btn-primary locked" onclick="goPro(event)">
+  🔒 Download PDF
+</button>
+
+{% endif %}
+
+    </div>
+
+    <a href="/dashboard" class="back-link">← Back to Dashboard</a>
+  </div>
+</div>
+<script>
+function goPro(e) {
+  e.preventDefault();
+  e.stopPropagation();
+
+  // Optional micro feedback
+  alert("This is a Pro feature. Upgrade to continue 🚀");
+
+  window.location.href = "/pricing";
+}
+</script>
+
+
 </body>
 </html>

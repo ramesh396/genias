@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Student Dashboard</title>
+
+<style>
+
+body {
+    font-family: "Inter", sans-serif;
+    background: radial-gradient(circle at top, #241208 0%, #120907 55%);
+    color: #f7efe9;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+    background: linear-gradient(135deg, #ffb066, #ff9f4a, #ff8a1f);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.container {
+    max-width: 1000px;
+    margin: auto;
+}
+
+.card {
+    background: #1a0f0b;
+    padding: 15px;
+    margin: 12px 0;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 176, 120, 0.2);
+}
+
+.topic {
+    font-size: 18px;
+    font-weight: bold;
+    color: #ffb066;
+}
+
+.meta {
+    font-size: 13px;
+    opacity: 0.8;
+}
+
+button {
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    background: linear-gradient(135deg, #ffb066, #ff9f4a, #ff8a1f);
+    color: #2a1408;
+    font-weight: bold;
+}
+
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.empty {
+    text-align: center;
+    opacity: 0.7;
+    margin-top: 50px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="top-bar">
+    <h1>Your Learning Dashboard</h1>
+
+    <a href="/tutor">
+        <button>Back to Tutor</button>
+    </a>
+</div>
+
+
+{% if progress|length == 0 %}
+
+<div class="empty">
+    You have not studied anything yet 😇
+</div>
+
+{% endif %}
+
+
+{% for p in progress %}
+
+<div class="card">
+
+<div class="topic">
+    📘 {{ p.topic[:60] }}
+</div>
+
+<div class="meta">
+    🗣 Language: {{ p.language }} |
+    🧠 Difficulty: {{ p.difficulty }}
+</div>
+
+<div class="meta">
+    ❓ Last Question: {{ p.last_question[:80] }}
+</div>
+
+<div class="meta">
+    📝 Notes: {{ p.notes }}
+</div>
+
+</div>
+
+{% endfor %}
+
+
+</div>
+
+</body>
+</html>

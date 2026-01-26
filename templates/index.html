@@ -1,119 +1,865 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <title>AI Notes Maker</title>
+<html lang="en">
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f6f8;
-        }
-        .container {
-            width: 700px;
-            margin: 40px auto;
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-        }
-        textarea {
-            width: 100%;
-            height: 120px;
-            padding: 12px;
-            font-size: 15px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-        }
-        button {
-            width: 100%;
-            margin-top: 15px;
-            padding: 12px;
-            background: #4CAF50;
-            color: white;
-            border: none;
-            font-size: 16px;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        .pdf-btn {
-            background: #2196F3;
-        }
-        pre {
-            background: #eef3ff;
-            padding: 20px;
-            margin-top: 20px;
-            border-radius: 10px;
-            white-space: pre-wrap;
-            min-height: 200px;
-        }
-    </style>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Notes Maker</title>
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+
+ <style>
+  /* ================= RESET ================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ================= VARIABLES ================= */
+:root {
+  --bg-main: #140b05;
+  --bg-panel: #1d120a;
+  --bg-chat: #0e0703;
+
+  --primary: #ff9a42;
+  --primary-hover: #ff841a;
+  --primary-soft: #402413;
+
+  --border-soft: rgba(255, 160, 80, 0.18);
+  --shadow-soft: 0 24px 60px rgba(0,0,0,0.55);
+
+  --green: #22c55e;
+  --danger: #ef4444;
+
+  --text-main: #fff2e6;
+  --text-muted: #cfa78a;
+}
+
+/* ================= BASE ================= */
+
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: Inter, system-ui, sans-serif;
+  background: radial-gradient(circle at top, #2a1408, var(--bg-main));
+  color: var(--text-main);
+  overflow-y: auto;
+}
+
+/* ================= CONTAINER ================= */
+
+.container {
+  min-height: calc(100vh - 64px);
+}
+
+/* ================= TOPBAR ================= */
+
+.topbar {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 64px;
+  padding: 0 22px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-soft);
+
+  z-index: 1000;
+}
+
+/* ================= BUTTONS ================= */
+
+.btn-primary {
+  background: linear-gradient(135deg,#ffb066,#ff8a1f);
+  color: #2a1408;
+  border-radius: 12px;
+  padding: 10px 18px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg,#ff9a42,#ff7a00);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+
+.logout { color: var(--text-muted); }
+
+/* ================= APP LAYOUT ================= */
+
+.app-layout {
+  padding-top: 64px;
+}
+
+/* ================= SIDEBAR ================= */
+
+.sidebar {
+  position: fixed;
+  top: 64px;
+  left: 0;
+
+  width: 260px;
+  height: calc(100vh - 64px);
+
+  background: var(--bg-chat);
+  border-right: 1px solid var(--border-soft);
+  padding: 18px;
+
+  overflow-y: auto;
+}
+
+/* ================= SIDEBAR UI ================= */
+
+.sidebar-title {
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin: 18px 0 10px;
+}
+
+.sidebar-btn,
+.memory-test {
+  width: 100%;
+  display: block;
+  padding: 12px;
+  border-radius: 12px;
+  margin-top: 10px;
+
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-soft);
+  color: var(--text-main);
+
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.sidebar-btn:hover {
+  background: rgba(255,255,255,0.08);
+}
+
+.eval-btn,
+.memory-test {
+  background: linear-gradient(135deg,#16a34a,#22c55e);
+  color:#052e16;
+}
+
+/* ================= MAIN PANEL ================= */
+
+.main-panel {
+  margin-left: 260px;
+  padding: 24px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ================= INPUTS ================= */
+
+input, textarea, select {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-soft);
+  color: var(--text-main);
+
+  padding: 14px;
+  border-radius: 12px;
+}
+
+input:focus, textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+/* ================= AI OUTPUT ================= */
+
+.chat-container {
+  background: var(--bg-chat);
+  border-radius: 18px;
+  padding: 22px;
+  border: 1px solid var(--border-soft);
+}
+
+/* ================= FOOTER ================= */
+
+.app-footer {
+  margin-left: 260px;
+  padding: 20px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+/* ================= LOGIN PAGE ================= */
+
+.login-wrapper {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+}
+
+.login-card {
+  max-width: 420px;
+  width: 100%;
+
+  background: var(--bg-panel);
+  border: 1px solid var(--border-soft);
+  border-radius: 22px;
+
+  padding: 32px;
+  box-shadow: var(--shadow-soft);
+  text-align: center;
+}
+
+.login-card h1 {
+  background: linear-gradient(135deg,#ffb066,#ff8a1f);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.divider {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin:20px 0;
+}
+
+.divider:before,
+.divider:after {
+  content:"";
+  flex:1;
+  height:1px;
+  background:var(--border-soft);
+}
+/* ===== PREVENT INNER SCROLL ===== */
+
+.main-panel {
+  height: auto !important;
+  overflow: visible !important;
+}
+
+/* Body handles scrolling */
+body {
+  overflow-y: auto;
+}
+
+/* Remove height limits from wrappers */
+.container,
+.app-layout {
+  min-height: unset !important;
+  height: auto !important;
+}
+
+.view-btn {
+  padding: 6px 14px;
+  border-radius: 999px;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  background: linear-gradient(135deg, #34d399, #22c55e);
+  color: #052e16;
+
+  border: none;
+  text-decoration: none;
+
+  box-shadow: 
+    0 6px 16px rgba(34, 197, 94, 0.28),
+    inset 0 1px 0 rgba(255,255,255,0.25);
+
+  transition: 
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    filter 0.15s ease;
+}
+
+.view-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+  box-shadow:
+    0 10px 22px rgba(34, 197, 94, 0.4);
+}
+
+.view-btn:active {
+  transform: translateY(0);
+}
+
+.delete-btn {
+  padding: 6px 14px;
+  border-radius: 999px;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  background: linear-gradient(135deg, #f87171, #ef4444);
+  color: white;
+
+  border: none;
+  cursor: pointer;
+
+  box-shadow: 
+    0 6px 16px rgba(239, 68, 68, 0.3),
+    inset 0 1px 0 rgba(255,255,255,0.2);
+
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    filter 0.15s ease;
+}
+
+.delete-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+  box-shadow:
+    0 10px 22px rgba(239, 68, 68, 0.45);
+}
+
+.delete-btn:active {
+  transform: translateY(0);
+}
+
+
+/* ================= MOBILE ================= */
+
+@media(max-width:900px){
+
+  .sidebar {
+    left:-260px;
+    transition:left .25s ease;
+  }
+
+  .sidebar.open { left:0; }
+
+  .main-panel,
+  .app-footer { margin-left:0; }
+
+  .topbar { height:56px; }
+
+  .app-layout { padding-top:56px; }
+}
+
+/* ================= OVERLAY ================= */
+
+#overlay {
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.45);
+  display:none;
+}
+
+#overlay.active { display:block; }
+
+ </style>
+
 </head>
 
 <body>
-    {% if session.user %}
-    <div style="text-align:right;">
-        <img src="{{ session.user.avatar }}" width="30" style="border-radius:50%;">
-        {{ session.user.username }}
-        <a href="/logout">Logout</a>
-    </div>
-{% else %}
-    <a href="/login">
-        <button>🔐 Login with GitHub</button>
-    </a>
-{% endif %}
 
-
+<div id="overlay" onclick="closeSidebar()"></div>
 <div class="container">
-    <h2>🧠 AI Notes Generator (Streaming + PDF)</h2>
 
-    <form id="promptForm">
-        <textarea id="prompt" placeholder="Write your prompt here...
-Example:
-Create exam notes on Photosynthesis
-Use bullet points
-Simple language"></textarea>
+{% if not username %}
 
-        <button type="submit">Generate Notes</button>
+<!-- ================= AUTH PAGE ================= -->
+<div class="login-wrapper">
+  <div class="login-card">
+
+    <h1>AI Notes Maker</h1>
+
+    <p class="login-subtitle">
+      Smart notes. Faster revision. Better scores.
+    </p>
+
+    <!-- ================= FORM ================= -->
+
+    <form method="POST" id="authForm" action="/login">
+
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <!-- USERNAME (hidden initially for register) -->
+      <div class="input-group" id="usernameGroup" style="display:none;">
+        <label>Username</label>
+        <input type="text" name="username">
+      </div>
+
+      <!-- EMAIL -->
+      <div class="input-group">
+        <label>Email address</label>
+        <input type="email" name="email" required>
+      </div>
+
+      <!-- PASSWORD -->
+      <div class="input-group">
+        <label>Password</label>
+        <input type="password" name="password" required>
+      </div>
+
+      <!-- ================= ACTIONS ================= -->
+
+      <div class="auth-actions">
+
+        <button
+          type="submit"
+          class="btn-primary login-btn"
+          id="loginBtn">
+          Sign in
+        </button>
+
+        <button
+          type="button"
+          class="btn-secondary login-btn"
+          onclick="switchToRegister()">
+          Create account
+        </button>
+
+      </div>
+
+      <!-- ================= GOOGLE ================= -->
+
+      <div class="divider">
+        <span>OR CONTINUE WITH</span>
+      </div>
+
+      <a href="/login/google" class="google-btn">
+        <img src="https://www.svgrepo.com/show/475656/google-color.svg">
+        Sign in with Google
+      </a>
+
     </form>
 
-    <pre id="output"></pre>
+    <!-- ================= FORGOT PASSWORD ================= -->
 
-    <!-- PDF FORM -->
-    <form method="POST" action="/download">
-        <input type="hidden" name="content" id="pdfContent">
-        <button type="submit" class="pdf-btn">⬇ Download PDF</button>
-    </form>
+    <div class="text-center mt-3">
+      <a href="{{ url_for('auth.forgot_password') }}" class="forgot-link">
+        Forgot password?
+      </a>
+    </div>
+
+    <!-- ================= FOOTER ================= -->
+
+    <p class="login-footer">
+      By continuing, you agree to our
+      <a href="/terms">Terms</a> &
+      <a href="/privacy">Privacy Policy</a>
+    </p>
+
+  </div>
 </div>
 
+<!-- ================= REGISTER SWITCH SCRIPT ================= -->
+
 <script>
-document.getElementById("promptForm").addEventListener("submit", async function(e) {
-    e.preventDefault();
+function switchToRegister() {
 
-    const prompt = document.getElementById("prompt").value;
-    const output = document.getElementById("output");
-    const pdfContent = document.getElementById("pdfContent");
+  document.getElementById("usernameGroup").style.display = "block";
 
-    output.textContent = "⏳ Generating...\n\n";
-    pdfContent.value = "";
+  const form = document.getElementById("authForm");
+  form.action = "/register";
 
-    const response = await fetch("/stream", {
+  document.getElementById("loginBtn").innerText = "Register";
+}
+</script>
+
+{% else %}
+
+</div>
+
+<!-- ================= TOP BAR ================= -->
+<div class="topbar">
+
+  <button class="btn-secondary mobile-menu-btn" onclick="toggleSidebar()">
+    ☰
+  </button>
+
+  <h2>
+    {{ username }}
+    {% if plan == "pro" %}
+      <span class="badge pro">PRO</span>
+    {% else %}
+      <span class="badge free">FREE</span>
+    {% endif %}
+  </h2>
+
+  <div>
+    <a href="/settings" class="btn-secondary">⚙️ Settings</a>
+    <button onclick="toggleTheme()" class="btn-secondary">🌙 / ☀️</button>
+    <a href="/logout" class="logout">Logout</a>
+
+    {% if username == "admin" %}
+      <a href="/admin" class="btn-secondary">👑 Admin</a>
+    {% endif %}
+  </div>
+
+</div>
+
+
+<!-- ================= APP LAYOUT ================= -->
+<div class="app-layout">
+
+<!-- ===== SIDEBAR ===== -->
+<div class="sidebar">
+
+  <div class="sidebar-title">Features</div>
+
+  {% if plan == "pro" %}
+    <a href="/memory" class="memory-test">🧠 Memory Test</a>
+  {% else %}
+    <button class="memory-test locked" onclick="goPro()">🧠 Memory Test</button>
+  {% endif %}
+
+  <hr class="sidebar-divider">
+
+  <div class="sidebar-title">Tools</div>
+
+  <a href="/chat" class="sidebar-btn">💬 AI Doubt Chat</a>
+
+  {% if plan == "pro" %}
+    <a href="/evaluate" class="sidebar-btn eval-btn">🧠 Evaluate Answer</a>
+  {% else %}
+    <button class="sidebar-btn eval-btn locked" onclick="goPro()">
+      🧠 Evaluate Answer
+    </button>
+  {% endif %}
+  
+    <a href="/progress" class="sidebar-btn">
+  📊 Progress Dashboard
+</a>
+
+<a href="/tutor" class="sidebar-btn">🤖 AI Tutor</a>
+
+  <hr class="sidebar-divider">
+
+  <button class="sidebar-btn notes-toggle" onclick="toggleNotes()">
+    📚 Your Notes <span id="notesArrow">▾</span>
+  </button>
+
+  <div id="notesList" class="notes-wrapper">
+
+    {% if notes|length == 0 %}
+      <p style="color: var(--text-muted); font-size: 13px;">
+        No notes yet. Generate your first note 📘
+      </p>
+    {% else %}
+      <ul class="notes-list">
+        {% for n in notes %}
+        <li>
+          <span>{{ n["lesson"] }}</span>
+          <a href="/note/{{ n['id'] }}" class="view-btn">👁 View</a>
+          <button class="delete-btn" data-note-id="{{ n['id'] }}">🗑 Delete</button>
+        </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+  </div>
+
+</div>
+
+
+<!-- ===== MAIN PANEL ===== -->
+<div class="main-panel">
+
+  <h3>Generate Notes</h3>
+
+  <input id="lesson" placeholder="Enter topic (e.g. Cell Structure)">
+
+  <select id="mode">
+    <option value="board">Board Exam</option>
+    <option value="college">College Exam</option>
+    <option value="short">Short Notes</option>
+
+    {% if plan == "pro" %}
+      <option value="mcq">MCQ Practice</option>
+    {% else %}
+      <option value="locked" disabled>MCQ Practice (Pro)</option>
+    {% endif %}
+  </select>
+
+  <textarea id="user_prompt" rows="6"
+    placeholder="Paste your lesson, textbook paragraph, or study material here...">
+  </textarea>
+
+
+  <!-- ===== CHATGPT STYLE INPUT BAR ===== -->
+  <div class="input-bar">
+
+    <button class="attach-btn" onclick="toggleMenu()">+</button>
+
+    <div id="attachMenu" class="attach-menu" style="display:none">
+      <label for="noteImage" class="menu-item">📷 Upload Image</label>
+      <span class="menu-item" onclick="openCamera()">📸 Capture Photo</span>
+    </div>
+
+    <input type="file" id="noteImage" accept="image/*"
+           style="display:none" onchange="generateFromImage()">
+
+    <button id="generate-btn" class="btn-primary" onclick="generateNotes()">
+      Generate Notes
+    </button>
+
+  </div>
+
+
+  <!-- ===== LOADER ===== -->
+  <div id="aiLoader" class="ai-loader" style="display:none;">
+    <div class="rotator"></div>
+    <span>AI is generating notes…</span>
+  </div>
+
+  <!-- ===== AI OUTPUT ===== -->
+  <div id="chat" class="chat-container"></div>
+
+</div>
+
+</div>
+
+{% endif %}
+
+</div>
+
+
+<!-- ===== CAMERA MODAL ===== -->
+<div id="cameraModal" style="display:none; text-align:center;">
+
+  <video id="cameraStream" autoplay style="width:100%; max-width:400px;"></video>
+
+  <br>
+
+  <button onclick="capturePhoto()" class="btn-primary">Capture</button>
+  <button onclick="closeCamera()" class="btn-secondary">Cancel</button>
+
+  <canvas id="photoCanvas" style="display:none;"></canvas>
+
+</div>
+
+
+<footer class="app-footer">
+  <a href="/privacy">Privacy Policy</a>
+  <span>•</span>
+  <a href="/terms">Terms & Conditions</a>
+</footer>
+
+<script>
+// ----- IMAGE OCR GENERATION -----
+async function generateFromImage() {
+
+    let fileInput = document.getElementById("noteImage");
+
+    if (!fileInput || !fileInput.files.length) {
+        alert("Please select an image first");
+        return;
+    }
+
+    let formData = new FormData();
+
+    formData.append("image", fileInput.files[0]);
+
+    let mode = document.getElementById("mode").value;
+    formData.append("mode", mode);
+
+    let csrf = document.querySelector('meta[name="csrf-token"]').content;
+    formData.append("csrf_token", csrf);
+
+    document.getElementById("aiLoader").style.display = "flex";
+
+    let res = await fetch("/generate_from_image", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: prompt })
+        body: formData
     });
 
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
+    document.getElementById("aiLoader").style.display = "none";
 
-    while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        const text = decoder.decode(value);
-        output.textContent += text;
-        pdfContent.value += text;   // SAVE STREAM FOR PDF
+    let text = await res.text();
+
+    document.getElementById("chat").innerText = text;
+}
+
+
+// ----- ATTACH MENU TOGGLE -----
+function toggleMenu() {
+
+    let menu = document.getElementById("attachMenu");
+
+    if (!menu) return;
+
+    menu.style.display =
+        menu.style.display === "none" ? "block" : "none";
+}
+
+
+// ----- CAMERA FUNCTIONS -----
+function openCamera() {
+
+    document.getElementById("attachMenu").style.display = "none";
+
+    let modal = document.getElementById("cameraModal");
+    modal.style.display = "block";
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(function (stream) {
+
+            cameraStream = stream;
+
+            let video = document.getElementById("cameraStream");
+            video.srcObject = stream;
+
+        })
+        .catch(function () {
+            alert("Camera access denied or not supported");
+        });
+}
+
+
+function closeCamera() {
+
+    let modal = document.getElementById("cameraModal");
+    modal.style.display = "none";
+
+    if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+    }
+}
+
+
+function capturePhoto() {
+
+    let video = document.getElementById("cameraStream");
+    let canvas = document.getElementById("photoCanvas");
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    let ctx = canvas.getContext("2d");
+    ctx.drawImage(video, 0, 0);
+
+    canvas.toBlob(function (blob) {
+
+        let file = new File([blob], "camera_image.png", { type: "image/png" });
+
+        uploadCapturedImage(file);
+
+    }, "image/png");
+
+    closeCamera();
+}
+
+
+async function uploadCapturedImage(file) {
+
+    let formData = new FormData();
+
+    formData.append("image", file);
+
+    let csrf = document.querySelector('meta[name="csrf-token"]').content;
+    formData.append("csrf_token", csrf);
+
+    document.getElementById("aiLoader").style.display = "flex";
+
+    let res = await fetch("/generate_from_image", {
+        method: "POST",
+        body: formData
+    });
+
+    document.getElementById("aiLoader").style.display = "none";
+
+    let text = await res.text();
+
+    document.getElementById("chat").innerText = text;
+}
+
+async function generateNotes() {
+
+    let lesson = document.getElementById("lesson").value.trim();
+    let mode = document.getElementById("mode").value;
+    let userPrompt = document.getElementById("user_prompt").value.trim();
+
+    if (!lesson) {
+        alert("Please enter a topic first");
+        return;
+    }
+
+    let csrf = document.querySelector('meta[name="csrf-token"]').content;
+
+    let formData = new FormData();
+    formData.append("lesson", lesson);
+    formData.append("mode", mode);
+    formData.append("user_prompt", userPrompt);
+    formData.append("csrf_token", csrf);
+
+    document.getElementById("aiLoader").style.display = "flex";
+
+    try {
+
+        let res = await fetch("/generate_stream", {
+            method: "POST",
+            body: formData
+        });
+
+        document.getElementById("aiLoader").style.display = "none";
+
+        if (!res.ok) {
+            let err = await res.text();
+            alert(err);
+            return;
+        }
+
+        let text = await res.text();
+
+        document.getElementById("chat").innerText = text;
+
+    } catch (e) {
+        document.getElementById("aiLoader").style.display = "none";
+        alert("Failed to generate notes");
+    }
+}
+
+function toggleTheme() {
+
+    let body = document.body;
+
+    // Toggle light class
+    body.classList.toggle("light");
+
+    // Save preference
+    if (body.classList.contains("light")) {
+        localStorage.setItem("theme", "light");
+    } else {
+        localStorage.setItem("theme", "dark");
+    }
+}
+
+// Load saved theme on page load
+window.addEventListener("load", () => {
+
+    let saved = localStorage.getItem("theme");
+
+    if (saved === "light") {
+        document.body.classList.add("light");
     }
 });
+
 </script>
 
 </body>
 </html>
-

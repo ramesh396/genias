@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Edit Note</title>
+
+  <style>
+  /* ================= RESET ================= */
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* ================= THEME ================= */
+  :root {
+    --bg-main: #1a0d08;
+    --bg-panel: #24120a;
+    --bg-card: #120805;
+
+    --border-soft: rgba(255, 180, 120, 0.18);
+
+    --primary: #f97316;
+    --primary-hover: #ea580c;
+
+    --text-main: #f5ede7;
+    --text-muted: #d1b5a0;
+  }
+
+  /* ================= BASE ================= */
+  body {
+    font-family: Inter, system-ui, sans-serif;
+    background: radial-gradient(circle at top, #2a140a, #120805 65%);
+    min-height: 100vh;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: var(--text-main);
+  }
+
+  /* ================= EDIT CONTAINER ================= */
+  .edit-container {
+    width: 92%;
+    max-width: 920px;
+
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-radius: 22px;
+
+    padding: 32px 26px;
+
+    box-shadow:
+      0 30px 80px rgba(0,0,0,0.65),
+      inset 0 1px 0 rgba(255,255,255,0.05);
+  }
+
+  .edit-container h2 {
+    margin-bottom: 20px;
+    font-size: 1.4rem;
+    font-weight: 700;
+  }
+
+  /* ================= FORM ELEMENTS ================= */
+
+  label {
+    display: block;
+    margin-top: 14px;
+    margin-bottom: 6px;
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+
+  input[type="text"] {
+    width: 100%;
+    padding: 12px;
+
+    border-radius: 12px;
+    border: 1px solid var(--border-soft);
+
+    background: var(--bg-panel);
+    color: var(--text-main);
+
+    font-size: 15px;
+    outline: none;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 380px;
+
+    padding: 16px;
+    font-size: 15px;
+    line-height: 1.7;
+
+    border-radius: 14px;
+    border: 1px solid var(--border-soft);
+
+    background: var(--bg-panel);
+    color: var(--text-main);
+
+    resize: vertical;
+    outline: none;
+  }
+
+  textarea:focus,
+  input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(249,115,22,0.35);
+  }
+
+  /* ================= ACTIONS ================= */
+  .actions {
+    margin-top: 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+  }
+
+  button {
+    background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+    color: #1a0d08;
+
+    border: none;
+    padding: 14px 28px;
+    border-radius: 14px;
+
+    font-size: 15px;
+    font-weight: 800;
+
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 36px rgba(249,115,22,0.45);
+  }
+
+  .back-link {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .back-link:hover {
+    color: var(--text-main);
+  }
+
+  /* ================= MOBILE ================= */
+  @media (max-width: 600px) {
+
+    .edit-container {
+      padding: 24px 18px;
+    }
+
+    textarea {
+      min-height: 260px;
+    }
+
+    .actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    button {
+      width: 100%;
+    }
+  }
+
+  </style>
+
+</head>
+
+<body>
+
+<div class="edit-container">
+
+  <h2>Edit Note</h2>
+
+  <form method="POST">
+
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <label>Title</label>
+    <input type="text" name="lesson" value="{{ note.lesson }}" required>
+
+    <label>Content</label>
+    <textarea name="content" required>{{ note.content }}</textarea>
+
+    <div class="actions">
+      <a href="/dashboard" class="back-link">← Back to Dashboard</a>
+      <button type="submit">Save Changes</button>
+    </div>
+
+  </form>
+
+</div>
+
+</body>
+</html>

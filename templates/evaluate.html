@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>🧠 Answer Evaluation • AI Notes Maker</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- 🔐 CSRF TOKEN -->
+<meta name="csrf-token" content="{{ csrf_token() }}">
+
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ================= PRO ORANGE THEME ================= */
+:root {
+  --bg-main: #1a0d08;
+  --bg-panel: #24120a;
+  --bg-card: #120805;
+
+  --border-soft: rgba(255,180,120,0.18);
+
+  --primary: #ff9f4a;
+  --primary-hover: #ff8a1f;
+
+  --green: #22c55e;
+
+  --text-main: #f5ede7;
+  --text-muted: #d1b5a0;
+}
+
+/* ================= BASE ================= */
+body {
+  font-family: Inter, system-ui, sans-serif;
+  background: radial-gradient(circle at top, #2a140a, #120805 65%);
+  color: var(--text-main);
+  min-height: 100vh;
+  padding: 24px 16px 80px;
+}
+
+/* ================= CONTAINER ================= */
+.container {
+  max-width: 900px;
+  margin: auto;
+}
+
+/* ================= HEADER ================= */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 22px;
+}
+
+.header h1 {
+  font-size: 1.6rem;
+  font-weight: 800;
+}
+
+.back {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.back:hover {
+  color: var(--text-main);
+}
+
+/* ================= CARD ================= */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 22px;
+  padding: 22px;
+  margin-bottom: 20px;
+
+  box-shadow:
+    0 28px 80px rgba(0,0,0,0.6),
+    inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+/* ================= FORM ================= */
+label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--text-muted);
+}
+
+textarea {
+  width: 100%;
+  min-height: 120px;
+  background: var(--bg-panel);
+  color: var(--text-main);
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  padding: 14px;
+  font-size: 14px;
+  resize: vertical;
+}
+
+textarea::placeholder {
+  color: var(--text-muted);
+}
+
+textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(255,159,74,0.35);
+}
+
+/* ================= ACTION BUTTON ================= */
+.actions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+button {
+  padding: 12px 22px;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+
+  font-size: 14px;
+  font-weight: 800;
+
+  background: linear-gradient(
+    135deg,
+    var(--primary),
+    var(--primary-hover)
+  );
+  color: #1a0d08;
+
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 36px rgba(255,159,74,0.45);
+}
+
+/* ================= STATUS ================= */
+#status {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ================= RESULT ================= */
+.result-card {
+  display: none;
+}
+
+pre {
+  white-space: pre-wrap;
+  line-height: 1.7;
+  font-size: 14.5px;
+  color: var(--text-main);
+}
+
+/* ================= MOBILE ================= */
+@media (max-width: 600px) {
+  .header h1 {
+    font-size: 1.4rem;
+  }
+  button {
+    width: 100%;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <h1>🧠 Answer Evaluation</h1>
+    <a class="back" href="/dashboard">← Dashboard</a>
+  </div>
+
+  <!-- INPUT CARD -->
+  <div class="card">
+    <form id="evalForm">
+
+      <!-- 🔐 CSRF TOKEN -->
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <label>Exam Question</label>
+      <textarea name="question" placeholder="Enter the exam question..." required></textarea>
+
+      <label style="margin-top:14px;">Your Answer</label>
+      <textarea name="answer" placeholder="Write your answer clearly..." required></textarea>
+
+      <div class="actions">
+        <button type="submit">Evaluate Answer</button>
+      </div>
+    </form>
+
+    <p id="status"></p>
+  </div>
+
+  <!-- RESULT CARD -->
+  <div class="card result-card" id="resultCard">
+    <pre id="result"></pre>
+  </div>
+
+</div>
+
+<script>
+const csrfToken = document
+  .querySelector('meta[name="csrf-token"]')
+  .getAttribute("content");
+
+document.getElementById("evalForm").addEventListener("submit", async function(e) {
+  e.preventDefault();
+
+  const status = document.getElementById("status");
+  const result = document.getElementById("result");
+  const card = document.getElementById("resultCard");
+
+  status.innerText = "🧠 Evaluating your answer…";
+  result.innerText = "";
+  card.style.display = "block";
+
+  const formData = new FormData(this);
+  formData.append("csrf_token", csrfToken);
+
+  const response = await fetch("/evaluate_answer", {
+    method: "POST",
+    body: formData
+  });
+
+  if (!response.ok) {
+    status.innerText = "❌ Evaluation failed or Pro required.";
+    return;
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+
+  status.innerText = "";
+
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    result.innerText += decoder.decode(value);
+  }
+});
+</script>
+
+</body>
+</html>

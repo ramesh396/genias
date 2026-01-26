@@ -1,0 +1,39 @@
+{% if notes %}
+<div class="notes-wrapper">
+
+    {% for note in notes %}
+    <div class="note-item">
+
+        <div class="note-header">
+            <h3>{{ note.lesson }}</h3>
+        </div>
+
+        <div class="note-buttons">
+
+            <a href="/note/{{ note.id }}" class="btn btn-view">
+                View
+            </a>
+
+            <a href="/download/{{ note.id }}" class="btn btn-download">
+                Download PDF
+            </a>
+
+            <form action="/delete/{{ note.id }}" method="POST" style="display:inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-delete">
+                    Delete
+                </button>
+            </form>
+
+        </div>
+
+    </div>
+    {% endfor %}
+
+</div>
+
+{% else %}
+<div class="no-notes">
+    <p>No notes generated yet.</p>
+</div>
+{% endif %}

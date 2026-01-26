@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>👑 Admin Dashboard • AI Genies</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+/* ================= RESET ================= */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ================= ORANGE PRO THEME ================= */
+:root {
+  --bg-main: #1a0d08;
+  --bg-panel: #24120a;
+  --bg-card: #120805;
+
+  --border-soft: rgba(255,180,120,0.18);
+
+  --primary: #ff9f4a;
+  --primary-hover: #ff8a1f;
+  --green: #22c55e;
+  --yellow: #facc15;
+  --danger: #ef4444;
+
+  --text-main: #f5ede7;
+  --text-muted: #d1b5a0;
+}
+
+/* ================= BASE ================= */
+body {
+  font-family: Inter, system-ui, sans-serif;
+  background: radial-gradient(circle at top, #2a140a, #120805 65%);
+  color: var(--text-main);
+  padding: 30px 16px 80px;
+}
+
+/* ================= CONTAINER ================= */
+.box {
+  max-width: 1100px;
+  margin: auto;
+
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 22px;
+
+  padding: 26px;
+
+  box-shadow:
+    0 30px 80px rgba(0,0,0,0.65),
+    inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+/* ================= HEADER ================= */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.header h2 {
+  font-size: 1.6rem;
+  font-weight: 900;
+}
+
+.back {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.back:hover {
+  color: var(--text-main);
+}
+
+/* ================= STATS ================= */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin: 22px 0;
+}
+
+.stat {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-soft);
+  padding: 16px;
+  border-radius: 14px;
+  font-size: 14px;
+}
+
+.stat b {
+  display: block;
+  font-size: 20px;
+  margin-top: 6px;
+}
+
+/* ================= TABLE ================= */
+.table-wrap {
+  overflow-x: auto;
+  margin-top: 22px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 720px;
+}
+
+th, td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-soft);
+  text-align: left;
+  font-size: 14px;
+}
+
+th {
+  color: var(--primary);
+  font-weight: 800;
+}
+
+.pro {
+  color: var(--green);
+  font-weight: 800;
+}
+
+.free {
+  color: var(--yellow);
+  font-weight: 800;
+}
+
+.delete {
+  color: var(--danger);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.delete:hover {
+  text-decoration: underline;
+}
+
+/* ================= MOBILE ================= */
+@media (max-width: 700px) {
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .header h2 {
+    font-size: 1.4rem;
+  }
+
+  .stat b {
+    font-size: 18px;
+  }
+
+  th, td {
+    font-size: 13px;
+    padding: 10px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+  <!-- HEADER -->
+  <div class="header">
+    <h2>👑 Admin Dashboard</h2>
+    <a href="/dashboard" class="back">← Back to Dashboard</a>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat">👥 Total Users<b>{{ stats.users }}</b></div>
+    <div class="stat">⭐ Pro Users<b>{{ stats.pro_users }}</b></div>
+    <div class="stat">🆓 Free Users<b>{{ stats.free_users }}</b></div>
+    <div class="stat">📝 Total Notes<b>{{ stats.notes }}</b></div>
+    <div class="stat">💰 Revenue<b>₹{{ stats.revenue }}</b></div>
+  </div>
+
+  <!-- USERS TABLE -->
+  <div class="table-wrap">
+    <table>
+      <tr>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Plan</th>
+        <th>Notes</th>
+        <th>Action</th>
+      </tr>
+
+      {% for u in users %}
+      <tr>
+        <td>{{ u[1] }}</td>
+        <td>{{ u[2] }}</td>
+
+        <td class="{{ u[3] }}">
+          {{ u[3]|upper }}
+        </td>
+
+        <td>{{ u[4] }}</td>
+
+        <td>
+          {% if u[1] != "admin" %}
+            <a class="delete"
+               href="/admin/delete_user/{{ u[0] }}"
+               onclick="return confirm('⚠️ Delete this user permanently?');">
+              ❌ Delete
+            </a>
+          {% else %}
+            🔒 Protected
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Progress Dashboard</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+
+:root{
+  --bg-main:#120907;
+  --bg-panel:#1a0f0b;
+  --bg-chat:#0c0604;
+
+  --border-soft:rgba(255,180,120,.18);
+
+  --primary:#ff9f4a;
+  --primary-hover:#ff8a1f;
+
+  --text-main:#f7efe9;
+  --text-muted:#c8a996;
+}
+
+/* Light mode support */
+body.light{
+  --bg-main:#ffe3cc;
+  --bg-panel:#fff8f3;
+  --bg-chat:#ffd9bd;
+
+  --border-soft:rgba(243,124,40,.28);
+
+  --primary:#f37c28;
+  --primary-hover:#e36414;
+
+  --text-main:#2a1408;
+  --text-muted:#7a4a32;
+}
+
+body{
+  font-family: Inter, system-ui, sans-serif;
+  background: var(--bg-main);
+  color: var(--text-main);
+  padding: 20px;
+}
+
+.container{
+  max-width: 1000px;
+  margin: auto;
+  background: var(--bg-panel);
+  padding: 24px;
+  border-radius: 18px;
+  border: 1px solid var(--border-soft);
+}
+
+h2{
+  margin-bottom: 12px;
+}
+
+.section{
+  margin-top: 22px;
+  background: var(--bg-chat);
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--border-soft);
+}
+
+table{
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  background: var(--bg-panel);
+}
+
+th{
+  background: var(--primary);
+  color: #1a0d08;
+  padding: 12px;
+  text-align: left;
+}
+
+td{
+  padding: 10px;
+  border: 1px solid var(--border-soft);
+}
+
+tr:hover{
+  background: rgba(255,255,255,0.05);
+}
+
+.back{
+  text-decoration: none;
+  color: var(--primary);
+  font-weight: bold;
+}
+
+.stat-box{
+  display: inline-block;
+  background: var(--bg-chat);
+  padding: 12px 16px;
+  border-radius: 12px;
+  margin-right: 10px;
+  margin-top: 10px;
+  border: 1px solid var(--border-soft);
+}
+
+.theme-btn{
+  float: right;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border-soft);
+  background: var(--bg-chat);
+  color: var(--text-main);
+  cursor: pointer;
+}
+
+@media(max-width: 600px){
+  body{
+    padding: 10px;
+  }
+
+  .container{
+    padding: 16px;
+  }
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+  <button class="theme-btn" onclick="toggleTheme()">🌙 / ☀️</button>
+
+  <a href="/dashboard" class="back">← Back to Dashboard</a>
+
+  <h2>📊 Your Learning Progress</h2>
+
+  <div class="section">
+
+    <h3>Overall Statistics</h3>
+
+    <div class="stat-box">
+      Total Notes: <b>{{ total_notes }}</b>
+    </div>
+
+    <div class="stat-box">
+      Total Chats: <b>{{ total_chats }}</b>
+    </div>
+
+  </div>
+
+
+  <div class="section">
+
+    <h3>Today’s Activity</h3>
+
+    <div class="stat-box">
+      Notes Today: <b>{{ notes_today }}</b>
+    </div>
+
+    <div class="stat-box">
+      Chats Today: <b>{{ chats_today }}</b>
+    </div>
+
+  </div>
+
+
+  <div class="section">
+
+    <h3>Last 7 Days Activity</h3>
+
+    <table>
+      <tr>
+        <th>Date</th>
+        <th>Notes</th>
+        <th>Chats</th>
+      </tr>
+
+      {% for d in last_week %}
+      <tr>
+        <td>{{ d.date }}</td>
+        <td>{{ d.notes }}</td>
+        <td>{{ d.chats }}</td>
+      </tr>
+      {% endfor %}
+
+    </table>
+
+  </div>
+
+
+  <div class="section">
+
+    <h3>📘 Topic Wise Notes Analytics</h3>
+
+    {% if topic_data|length == 0 %}
+      <p>No topic data available yet. Generate some notes first!</p>
+    {% else %}
+
+    <table>
+      <tr>
+        <th>Topic</th>
+        <th>Notes Generated</th>
+      </tr>
+
+      {% for t in topic_data %}
+      <tr>
+        <td>{{ t.topic }}</td>
+        <td>{{ t.notes }}</td>
+      </tr>
+      {% endfor %}
+
+    </table>
+
+    {% endif %}
+
+  </div>
+
+
+  <div class="section">
+
+    <h3>💬 Most Asked Doubt Topics</h3>
+
+    {% if chat_topic_data|length == 0 %}
+      <p>No chat analytics yet.</p>
+    {% else %}
+
+    <table>
+      <tr>
+        <th>Topic / Question</th>
+        <th>Times Asked</th>
+      </tr>
+
+      {% for c in chat_topic_data %}
+      <tr>
+        <td>{{ c.topic }}</td>
+        <td>{{ c.count }}</td>
+      </tr>
+      {% endfor %}
+
+    </table>
+
+    {% endif %}
+
+  </div>
+
+</div>
+
+
+<script>
+function toggleTheme(){
+
+  document.body.classList.toggle("light");
+
+  if(document.body.classList.contains("light")){
+    localStorage.setItem("theme","light");
+  } else {
+    localStorage.setItem("theme","dark");
+  }
+}
+
+window.onload = function(){
+  let saved = localStorage.getItem("theme");
+  if(saved === "light"){
+    document.body.classList.add("light");
+  }
+}
+</script>
+
+</body>
+</html>

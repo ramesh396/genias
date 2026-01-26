@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Upgrade to Pro – AI Genies</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-main: #1a0d08;
+      --bg-card: #120805;
+      --border-soft: rgba(255, 180, 120, 0.18);
+      --primary: #f97316;
+      --primary-hover: #ea580c;
+      --green: #16a34a;
+      --text-main: #f5ede7;
+      --text-muted: #d1b5a0;
+    }
+
+    body {
+      font-family: Inter, system-ui, sans-serif;
+      background: radial-gradient(circle at top, #2a140a, #120805 60%);
+      color: var(--text-main);
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: auto;
+      padding: 60px 20px;
+    }
+
+    h1 { text-align: center; font-size: 2.4rem; }
+    .subtitle {
+      text-align: center;
+      color: var(--text-muted);
+      margin: 12px 0 46px;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-soft);
+      border-radius: 22px;
+      padding: 30px 24px;
+      text-align: center;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.55);
+    }
+
+    .card.pro {
+      border: 2px solid var(--primary);
+      box-shadow: 0 0 40px rgba(249,115,22,0.35);
+    }
+
+    .plan { font-size: 20px; font-weight: 800; }
+    .price {
+      font-size: 36px;
+      font-weight: 900;
+      margin: 14px 0;
+      color: var(--primary);
+    }
+
+    .features {
+      text-align: left;
+      margin: 22px 0;
+      font-size: 14.5px;
+      line-height: 1.9;
+    }
+
+    .features li {
+      list-style: none;
+    }
+
+    .features li::before {
+      content: "✔ ";
+      color: var(--green);
+    }
+
+    .btn {
+      display: block;
+      margin-top: 18px;
+      padding: 14px;
+      border-radius: 14px;
+      font-weight: 800;
+      text-align: center;
+      background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+      color: #1f120a;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .btn.secondary {
+      background: rgba(255,255,255,0.1);
+      color: var(--text-main);
+      border: 1px solid var(--border-soft);
+    }
+
+    .recommended {
+      display: inline-block;
+      margin-bottom: 12px;
+      padding: 4px 12px;
+      font-size: 12px;
+      font-weight: 800;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #facc15, #f97316);
+      color: #1a0d08;
+    }
+
+    .back {
+      text-align: center;
+      margin-top: 42px;
+    }
+
+    .back a {
+      color: var(--text-muted);
+      text-decoration: none;
+    }
+  </style>
+</head>
+
+<body>
+<div class="container">
+
+  <h1>Upgrade to AI Genies Pro 🚀</h1>
+  <p class="subtitle">Unlock powerful exam tools & learn faster</p>
+
+  <div class="pricing-grid">
+
+    <!-- FREE -->
+    <div class="card">
+      <div class="plan">Free</div>
+      <div class="price">₹0</div>
+      <ul class="features">
+        <li>5 notes/day</li>
+        <li>20 saved notes</li>
+      </ul>
+      <a href="/dashboard" class="btn secondary">Current Plan</a>
+    </div>
+
+    <!-- PRO -->
+    <div class="card pro">
+      <span class="recommended">MOST POPULAR</span>
+      <div class="plan">Pro Monthly</div>
+      <div class="price">₹99</div>
+
+      <ul class="features">
+        <li>Unlimited notes</li>
+        <li>MCQ + Memory Test</li>
+        <li>Evaluation</li>
+        <li>PDF download</li>
+      </ul>
+
+      <button class="btn" onclick="payNow()">Upgrade to Pro</button>
+    </div>
+
+  </div>
+
+  <div class="back">
+    <a href="/dashboard">← Back to Dashboard</a>
+  </div>
+
+</div>
+
+<!-- 🔐 PAYMENT FORM (IMPORTANT) -->
+<form id="payment-form" method="POST" action="/payment_success">
+  <input type="hidden" name="razorpay_payment_id">
+  <input type="hidden" name="razorpay_order_id">
+  <input type="hidden" name="razorpay_signature">
+</form>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+function payNow() {
+  fetch("/create_order", { method: "POST" })
+    .then(res => res.json())
+    .then(data => {
+      const options = {
+        key: data.key,
+        amount: 9900,
+        currency: "INR",
+        name: "AI Genies",
+        description: "Pro Plan",
+        order_id: data.order_id,
+        handler: function (response) {
+          document.querySelector("input[name=razorpay_payment_id]").value = response.razorpay_payment_id;
+          document.querySelector("input[name=razorpay_order_id]").value = response.razorpay_order_id;
+          document.querySelector("input[name=razorpay_signature]").value = response.razorpay_signature;
+          document.getElementById("payment-form").submit();
+        }
+      };
+      new Razorpay(options).open();
+    });
+}
+</script>
+
+</body>
+</html>

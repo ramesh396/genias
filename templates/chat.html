@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AI Chat</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="csrf-token" content="{{ csrf_token() }}">
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg-main:#1a0d08;
+  --bg-panel:#24120a;
+  --bg-chat:#120805;
+  --border-soft:rgba(255,180,120,.18);
+  --primary:#ff9f4a;
+  --primary-hover:#ff8a1f;
+  --green:#22c55e;
+  --danger:#ef4444;
+  --text-main:#f5ede7;
+  --text-muted:#d1b5a0;
+}
+
+body{
+  font-family:Inter,system-ui,sans-serif;
+  background:var(--bg-main);
+  color:var(--text-main);
+}
+
+.app{
+  display:flex;
+  height:100dvh;
+}
+
+/* ---------- SIDEBAR ---------- */
+.sidebar{
+  width:280px;
+  background:var(--bg-chat);
+  border-right:1px solid var(--border-soft);
+  padding:16px;
+  overflow-y:auto;
+}
+
+.new-chat-btn{
+  width:100%;
+  padding:12px;
+  margin-bottom:14px;
+  background:linear-gradient(135deg,var(--primary),var(--primary-hover));
+  border:none;
+  color:#1f120a;
+  border-radius:12px;
+  font-weight:800;
+  cursor:pointer;
+}
+
+.history-title{
+  font-size:12px;
+  font-weight:800;
+  margin-bottom:10px;
+  color:var(--text-muted);
+}
+
+.history-item{
+  padding:10px 12px;
+  background:var(--bg-panel);
+  border-radius:10px;
+  margin-bottom:8px;
+  cursor:pointer;
+  font-size:14px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.history-item.active{
+  background:rgba(255,159,74,.18);
+  border-left:4px solid var(--primary);
+}
+
+.history-item:hover{
+  background:rgba(255,255,255,0.06);
+}
+
+.delete-icon{
+  color:var(--danger);
+  padding:4px;
+}
+
+/* ---------- CHAT AREA ---------- */
+.chat-area{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  background:var(--bg-panel);
+}
+
+.top-bar{
+  padding:14px 16px;
+  border-bottom:1px solid var(--border-soft);
+  font-weight:700;
+}
+
+.chat-container{
+  flex:1;
+  padding:16px;
+  overflow-y:auto;
+  background:var(--bg-chat);
+}
+
+.empty-state{
+  text-align:center;
+  margin-top:20%;
+  color:var(--text-muted);
+}
+
+.message{
+  max-width:80%;
+  padding:14px;
+  border-radius:14px;
+  margin-bottom:12px;
+  white-space:pre-wrap;
+}
+
+.user{
+  background:linear-gradient(135deg,var(--primary),var(--primary-hover));
+  color:#1f120a;
+  margin-left:auto;
+}
+
+.bot{
+  background:var(--bg-panel);
+  border:1px solid var(--border-soft);
+}
+
+/* ---------- INPUT AREA ---------- */
+.input-area{
+  display:flex;
+  gap:10px;
+  padding:12px;
+  border-top:1px solid var(--border-soft);
+}
+
+textarea{
+  flex:1;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid var(--border-soft);
+  background:var(--bg-chat);
+  color:var(--text-main);
+}
+
+.send-btn{
+  padding:12px 18px;
+  background:var(--green);
+  border:none;
+  border-radius:10px;
+  font-weight:800;
+  cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<div class="sidebar">
+
+  <button class="new-chat-btn" onclick="startNewChat()">
+    + New Chat
+  </button>
+
+  <div class="history-title">RECENT CHATS</div>
+
+  <div id="sessionList"></div>
+
+  <br>
+  <a href="/dashboard" style="color:var(--text-muted)">
+    ← Back to Dashboard
+  </a>
+
+</div>
+
+<div class="chat-area">
+
+  <div class="top-bar">
+    AI Chat Assistant
+  </div>
+
+  <div class="chat-container" id="chat">
+    <div class="empty-state">
+      Start a conversation 😊
+    </div>
+  </div>
+
+  <div class="input-area">
+
+  <button class="send-btn" onclick="toggleMenu()">
+    ☰
+  </button>
+
+  <textarea id="question"
+    placeholder="Ask something..."
+    onkeydown="handleEnter(event)"></textarea>
+
+  <button class="send-btn" onclick="sendChat()">
+    Send
+  </button>
+
+</div>
+
+<!-- Hidden Menu -->
+<div id="mediaMenu" style="display:none;padding:10px;border-top:1px solid var(--border-soft)">
+
+  <input type="file" id="imageInput" accept="image/*" style="display:none"
+    onchange="uploadImage(this)">
+
+  <button class="send-btn" onclick="document.getElementById('imageInput').click()">
+    Upload Image
+  </button>
+
+  <button class="send-btn" onclick="openCamera()">
+    Open Camera
+  </button>
+
+  <video id="camera" autoplay style="display:none;width:100%;margin-top:10px"></video>
+
+  <button class="send-btn" id="captureBtn" style="display:none" onclick="captureImage()">
+    Capture
+  </button>
+
+  <canvas id="canvas" style="display:none"></canvas>
+
+</div>
+
+
+</div>
+
+</div>
+
+<script>
+const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+let activeSession = null;
+
+// Load sidebar history (like ChatGPT)
+async function refreshSidebar(){
+  try {
+    const res = await fetch("/chat/sessions");
+    const data = await res.json();
+
+    let html = "";
+
+    data.sessions.forEach(s => {
+
+      const activeClass = s.id === activeSession ? "active" : "";
+
+      html += `
+        <div class="history-item ${activeClass}"
+             onclick="loadChat(${s.id}, this)">
+          <span>${s.title}</span>
+          <span class="delete-icon"
+                onclick="deleteChat(event, ${s.id})">✕</span>
+        </div>
+      `;
+    });
+
+    document.getElementById("sessionList").innerHTML = html;
+
+  } catch(err) {
+    console.error("Failed to load sessions", err);
+  }
+}
+
+// Start brand new chat
+function startNewChat(){
+  activeSession = null;
+
+  document.getElementById("chat").innerHTML = `
+    <div class="empty-state">
+      Start a new conversation 😊
+    </div>
+  `;
+
+  refreshSidebar();
+}
+
+// Load selected chat history
+async function loadChat(id, el){
+
+  activeSession = id;
+
+  const chatBox = document.getElementById("chat");
+  chatBox.innerHTML = "";
+
+  document.querySelectorAll(".history-item")
+    .forEach(i => i.classList.remove("active"));
+
+  el.classList.add("active");
+
+  try {
+    const res = await fetch(`/chat/session/${id}`);
+    const data = await res.json();
+
+    if(!data.messages || data.messages.length === 0){
+      chatBox.innerHTML = `
+        <div class="empty-state">
+          No messages in this conversation
+        </div>`;
+      return;
+    }
+
+    data.messages.forEach(m => {
+      chatBox.innerHTML += `
+        <div class="message user">${m.question}</div>
+        <div class="message bot">${m.answer}</div>
+      `;
+    });
+
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+  } catch(err) {
+    chatBox.innerHTML = `
+      <div class="empty-state">
+        Failed to load chat
+      </div>`;
+  }
+}
+
+// Delete a chat session
+async function deleteChat(event, id){
+  event.stopPropagation();
+
+  if(!confirm("Delete this conversation?")) return;
+
+  await fetch(`/chat/delete/${id}`, {
+    method: "POST",
+    headers: {"Content-Type":"application/x-www-form-urlencoded"},
+    body: new URLSearchParams({csrf_token: csrfToken})
+  });
+
+  if(activeSession === id){
+    startNewChat();
+  }
+
+  refreshSidebar();
+}
+
+// Send message (MAIN FUNCTION)
+async function sendChat(){
+
+  const input = document.getElementById("question");
+  const chat = document.getElementById("chat");
+
+  const q = input.value.trim();
+  if(!q) return;
+
+  // Remove empty state on first message
+  if(!activeSession){
+    chat.innerHTML = "";
+  }
+
+  chat.innerHTML += `<div class="message user">${q}</div>`;
+  input.value = "";
+
+  const bot = document.createElement("div");
+  bot.className = "message bot";
+  bot.innerText = "AI is typing...";
+  chat.appendChild(bot);
+
+  const formData = new URLSearchParams({
+    question: q,
+    csrf_token: csrfToken
+  });
+
+  // THIS IS THE MOST IMPORTANT PART
+  // Reuse session if exists
+  if(activeSession){
+    formData.append("session_id", activeSession);
+  }
+
+  try {
+    const res = await fetch("/chat_stream", {
+      method: "POST",
+      headers: {"Content-Type":"application/x-www-form-urlencoded"},
+      body: formData
+    });
+
+    const text = await res.text();
+    bot.innerText = text;
+
+  } catch(err) {
+    bot.innerText = "❌ Failed to get AI response";
+  }
+
+  chat.scrollTop = chat.scrollHeight;
+
+  // Refresh sidebar so new session appears
+  refreshSidebar();
+}
+
+// Enter key behavior
+function handleEnter(e){
+  if(e.key === "Enter" && !e.shiftKey){
+    e.preventDefault();
+    sendChat();
+  }
+}
+
+// Load sidebar on page open
+window.onload = refreshSidebar;
+
+
+function toggleMenu(){
+  let menu = document.getElementById("mediaMenu");
+  menu.style.display = menu.style.display === "none" ? "block" : "none";
+}
+
+// -------- IMAGE UPLOAD --------
+function uploadImage(input){
+  const file = input.files[0];
+  if(!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = function(e){
+    sendImageToServer(e.target.result);
+  };
+
+  reader.readAsDataURL(file);
+}
+
+// -------- CAMERA FEATURES --------
+async function openCamera(){
+  const video = document.getElementById("camera");
+  const btn = document.getElementById("captureBtn");
+
+  video.style.display = "block";
+  btn.style.display = "block";
+
+  const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+  video.srcObject = stream;
+}
+
+function captureImage(){
+  const video = document.getElementById("camera");
+  const canvas = document.getElementById("canvas");
+
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(video, 0, 0);
+
+  const data = canvas.toDataURL("image/png");
+
+  sendImageToServer(data);
+}
+
+// -------- SEND IMAGE TO BACKEND --------
+async function sendImageToServer(base64){
+
+  const chat = document.getElementById("chat");
+
+  chat.innerHTML += `
+    <div class="message user">
+      <img src="${base64}" style="max-width:200px;border-radius:10px">
+    </div>
+  `;
+
+  const bot = document.createElement("div");
+  bot.className = "message bot";
+  bot.innerText = "Analyzing image...";
+  chat.appendChild(bot);
+
+  const formData = new URLSearchParams({
+    image: base64,
+    csrf_token: csrfToken
+  });
+
+  if(activeSession){
+    formData.append("session_id", activeSession);
+  }
+
+  const res = await fetch("/chat_stream", {
+    method: "POST",
+    headers: {"Content-Type":"application/x-www-form-urlencoded"},
+    body: formData
+  });
+
+  const text = await res.text();
+
+  bot.innerText = text;
+
+  refreshSidebar();
+}
+
+</script>
+
+
+</body>
+</html>

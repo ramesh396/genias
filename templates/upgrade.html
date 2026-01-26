@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>🚀 Upgrade to Pro • AI Genies</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+/* ================= RESET ================= */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ================= ORANGE PRO THEME ================= */
+:root {
+  --bg-main: #1a0d08;
+  --bg-card: #120805;
+  --border-soft: rgba(255,180,120,0.22);
+  --primary: #ff9f4a;
+  --primary-hover: #ff8a1f;
+  --text-main: #f5ede7;
+  --text-muted: #d1b5a0;
+}
+
+/* ================= BASE ================= */
+body {
+  font-family: Inter, system-ui, sans-serif;
+  background: radial-gradient(circle at top, #2a140a, #120805 65%);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--text-main);
+  padding: 20px;
+}
+
+/* ================= CARD ================= */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 26px;
+  padding: 36px 28px;
+  max-width: 460px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 40px 100px rgba(0,0,0,0.65);
+}
+
+/* ================= CONTENT ================= */
+h1 { font-size: 2rem; font-weight: 900; }
+.subtitle { color: var(--text-muted); margin: 10px 0 20px; }
+
+.price {
+  font-size: 42px;
+  font-weight: 900;
+  margin: 18px 0;
+  background: linear-gradient(135deg,#ffd29c,var(--primary),var(--primary-hover));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.features {
+  text-align: left;
+  margin: 26px 0;
+  padding: 20px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-soft);
+}
+
+.features span { display: block; line-height: 1.9; }
+
+.btn {
+  width: 100%;
+  margin-top: 20px;
+  padding: 16px;
+  border-radius: 18px;
+  border: none;
+  font-size: 17px;
+  font-weight: 900;
+  cursor: pointer;
+  color: #1a0d08;
+  background: linear-gradient(135deg,#ffd29c,var(--primary),var(--primary-hover));
+}
+
+.back {
+  display: inline-block;
+  margin-top: 18px;
+  font-size: 14px;
+  color: var(--text-muted);
+  text-decoration: none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+  <h1>🚀 Go Pro</h1>
+  <div class="subtitle">Score better. Study faster. Remember longer.</div>
+
+  <div class="price">₹99</div>
+
+  <div class="features">
+    <span>✅ Unlimited AI Notes</span>
+    <span>✅ Memory Tests & Recall</span>
+    <span>✅ Voice Answers</span>
+    <span>✅ PDF Downloads</span>
+    <span>✅ Exam Answer Evaluator</span>
+  </div>
+
+  <!-- ✅ SINGLE BUTTON -->
+  <button class="btn" id="payBtn">Upgrade to Pro</button>
+
+  <div class="subtitle">🔒 Secure payment • One-time • No auto-charge</div>
+  <a href="/dashboard" class="back">← Back to Dashboard</a>
+</div>
+
+<!-- ✅ REQUIRED -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+document.getElementById("payBtn").onclick = async () => {
+  try {
+    const res = await fetch("/create_order", { method: "POST" });
+    const data = await res.json();
+
+    const options = {
+      key: data.key,
+      amount: 9900,
+      currency: "INR",
+      name: "AI Genies",
+      description: "Pro Plan",
+      order_id: data.order_id,
+
+      handler: function (response) {
+        // ✅ SEND TO BACKEND
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = "/payment_success";
+
+        ["razorpay_payment_id","razorpay_order_id","razorpay_signature"]
+          .forEach(k => {
+            const i = document.createElement("input");
+            i.type = "hidden";
+            i.name = k;
+            i.value = response[k];
+            form.appendChild(i);
+          });
+
+        document.body.appendChild(form);
+        form.submit();
+      }
+    };
+
+    new Razorpay(options).open();
+
+  } catch (err) {
+    alert("Payment error. Try again.");
+    console.error(err);
+  }
+};
+</script>
+
+</body>
+</html>
