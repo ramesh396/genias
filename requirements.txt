@@ -1,6 +1,2 @@
 flask
 reportlab
-authlib
-requests
-gunicorn
-
