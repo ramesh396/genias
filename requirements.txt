@@ -11,3 +11,6 @@ pytesseract
 flask-limiter
 groq
 reportlab
+google-cloud-texttospeech
+google-api-core
+google-auth
