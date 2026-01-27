@@ -33,14 +33,18 @@ app = Flask(__name__)
 
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev_secret_key")
 
-# ----------- POSTGRESQL CONFIGURATION -----------
-app.config["SQLALCHEMY_DATABASE_URI"] = (
-    f"postgresql://{os.getenv('DB_USER')}:"
-    f"{os.getenv('DB_PASS')}@"
-    f"{os.getenv('DB_HOST')}/"
-    f"{os.getenv('DB_NAME')}"
-)
+# ----------- POSTGRESQL CONFIGURATION (RENDER SAFE) -----------
 
+db_url = os.getenv("DATABASE_URL")
+
+if not db_url:
+    raise RuntimeError("DATABASE_URL is not set in environment variables")
+
+# SQLAlchemy requires postgresql:// not postgres://
+if db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
+
+app.config["SQLALCHEMY_DATABASE_URI"] = db_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 
