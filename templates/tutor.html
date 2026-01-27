@@ -2,6 +2,7 @@
 <html>
 <head>
 <title>AI Tutor</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 
 <style>
 * {
@@ -19,6 +20,7 @@ body {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    height: 100dvh;
 }
 
 h2 {
@@ -144,6 +146,7 @@ button {
 
     bottom: 50px;
     left: 0;
+    right: auto;
 
     background: #1a0f0b;
     border: 1px solid rgba(255, 176, 120, 0.2);
@@ -212,6 +215,111 @@ button {
 
 .upload-option:hover {
     background: #2d1a14;
+}
+
+/* ================= MOBILE OPTIMIZATION ================= */
+
+@media (max-width: 768px) {
+
+    h2 {
+        font-size: 20px;
+        padding: 10px;
+    }
+
+    #chatbox {
+        padding: 12px;
+    }
+
+    .msg {
+        max-width: 92%;
+        font-size: 14px;
+        padding: 12px;
+    }
+
+    #inputArea {
+        flex-direction: column;
+        gap: 8px;
+        padding: 10px;
+
+        position: sticky;
+        bottom: 0;
+
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    textarea,
+    select,
+    button {
+        width: 100%;
+    }
+
+    #question {
+        min-width: unset;
+        height: 70px;
+    }
+
+    button {
+        padding: 14px;
+        font-size: 15px;
+    }
+
+    .plus-container {
+        width: 100%;
+    }
+
+    .plus-btn {
+        width: 100%;
+        border-radius: 14px;
+        height: 46px;
+    }
+
+    .upload-menu {
+        left: 0;
+        right: 0;
+        bottom: 56px;
+        width: 100%;
+    }
+
+    .upload-option {
+        font-size: 14px;
+    }
+
+    #genderMode {
+        display: flex;
+        gap: 8px;
+        width: 100%;
+    }
+
+    #genderMode button {
+        flex: 1;
+    }
+
+    .status {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* ================= SMALL PHONES ================= */
+
+@media (max-width: 420px) {
+
+    h2 {
+        font-size: 18px;
+    }
+
+    #question {
+        height: 60px;
+        font-size: 14px;
+    }
+
+    .msg {
+        font-size: 13.5px;
+    }
+
+    button {
+        font-size: 14px;
+    }
 }
 
 </style>
@@ -377,7 +485,10 @@ function addMessage(text, sender) {
     `;
 
     chatbox.appendChild(div);
+    setTimeout(() => {
     chatbox.scrollTop = chatbox.scrollHeight;
+}, 80);
+
 }
 
 // -------- SPEAK FUNCTION --------
