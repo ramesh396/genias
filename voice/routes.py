@@ -1,5 +1,7 @@
 from flask import Blueprint, request, Response
 import os
+import json
+import tempfile
 from dotenv import load_dotenv
 
 from google.cloud import texttospeech
@@ -9,16 +11,38 @@ load_dotenv()
 # ---- CREATE BLUEPRINT ----
 voice_bp = Blueprint("voice", __name__)
 
-# ---- LOAD GOOGLE CREDENTIALS SAFELY ----
-cred_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+# ---------------------------------------------------
+# LOAD GOOGLE TTS CREDENTIALS FROM ENV (RENDER SAFE)
+# ---------------------------------------------------
 
-if cred_path:
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = cred_path
+tts_json = os.getenv("GOOGLE_TTS_JSON")
+
+TEMP_CRED_PATH = None
+
+if tts_json:
+    try:
+        temp_file = tempfile.NamedTemporaryFile(
+            delete=False,
+            suffix=".json"
+        )
+        temp_file.write(tts_json.encode("utf-8"))
+        temp_file.close()
+
+        TEMP_CRED_PATH = temp_file.name
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = TEMP_CRED_PATH
+
+        print("✅ Google TTS credentials loaded from env")
+
+    except Exception as e:
+        print("❌ Failed to write Google TTS credentials:", str(e))
+
 else:
-    print("⚠️ WARNING: GOOGLE_APPLICATION_CREDENTIALS not set. Voice feature disabled.")
+    print("⚠️ GOOGLE_TTS_JSON not set — voice disabled")
 
+# ---------------------------------------------------
+# ROUTE
+# ---------------------------------------------------
 
-# ---- ROUTE ----
 @voice_bp.route("/voice")
 def voice():
 
@@ -28,13 +52,13 @@ def voice():
     if not text:
         return "No text provided", 400
 
-    # Limit size for Google API
+    # Limit length for Google API
     MAX_LENGTH = 4500
     if len(text) > MAX_LENGTH:
         text = text[:MAX_LENGTH]
 
-    # If credentials missing → fail nicely
-    if not os.getenv("GOOGLE_APPLICATION_CREDENTIALS"):
+    # If credentials missing → fail cleanly
+    if not TEMP_CRED_PATH:
         return "Voice service not configured", 503
 
     try:
@@ -44,7 +68,7 @@ def voice():
             text=text
         )
 
-        # Detect language
+        # Language detection
         if voice_name.startswith("hi-IN"):
             language_code = "hi-IN"
         elif voice_name.startswith("kn-IN"):
@@ -74,10 +98,11 @@ def voice():
             response.audio_content,
             mimetype="audio/mpeg",
             headers={
-                "Cache-Control": "no-cache"
+                "Cache-Control": "no-cache",
+                "Content-Type": "audio/mpeg"
             }
         )
 
     except Exception as e:
-        print("TTS Error:", str(e))
-        return "Error generating voice", 500
+        print("❌ TTS Error:", str(e))
+        return f"Error generating voice: {str(e)}", 500
