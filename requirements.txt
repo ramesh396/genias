@@ -1,2 +1,13 @@
 flask
+gunicorn
+psycopg2-binary
+razorpay
+python-dotenv
+flask_sqlalchemy
+flask_migrate
+authlib
+pillow
+pytesseract
+flask-limiter
+groq
 reportlab
