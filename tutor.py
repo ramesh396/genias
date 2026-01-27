@@ -4,6 +4,7 @@ from ai.notes import generate_notes_with_groq
 from PIL import Image
 import pytesseract
 from flask import current_app
+from utils.db_helpers import get_user_plan
 
 # ----- IMPORTANT: Change this to your real DB import -----
 from models_pg import StudentProgress, db
