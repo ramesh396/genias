@@ -35,6 +35,25 @@
   --text-muted: #cfa78a;
 }
 
+/* ================= LIGHT MODE ================= */
+
+body.light {
+
+  --bg-main: #f8fafc;
+  --bg-panel: #ffffff;
+  --bg-chat: #f1f5f9;
+
+  --primary: #f97316;
+  --primary-hover: #ea580c;
+  --primary-soft: #ffedd5;
+
+  --border-soft: rgba(0,0,0,0.08);
+  --shadow-soft: 0 12px 30px rgba(0,0,0,0.12);
+
+  --text-main: #0f172a;
+  --text-muted: #475569;
+}
+
 /* ================= BASE ================= */
 
 html, body {
@@ -413,6 +432,18 @@ body {
   text-align: center;
 }
 
+.attach-menu {
+  position: absolute;
+  bottom: 60px;
+  left: 0;
+
+  z-index: 3000;
+}
+
+.attach-btn {
+  touch-action: manipulation;
+}
+
 /* ================= MOBILE ================= */
 
 @media(max-width:900px){
@@ -442,6 +473,7 @@ body {
 }
 
 #overlay.active { display:block; }
+
 
  </style>
 
@@ -931,6 +963,26 @@ window.addEventListener("load", () => {
         document.body.classList.add("light");
     }
 });
+
+// ================= SIDEBAR MOBILE TOGGLE =================
+
+function toggleSidebar() {
+
+  const sidebar = document.querySelector(".sidebar");
+  const overlay = document.getElementById("overlay");
+
+  sidebar.classList.toggle("open");
+  overlay.classList.toggle("active");
+}
+
+function closeSidebar() {
+
+  const sidebar = document.querySelector(".sidebar");
+  const overlay = document.getElementById("overlay");
+
+  sidebar.classList.remove("open");
+  overlay.classList.remove("active");
+}
 
 </script>
 
