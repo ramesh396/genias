@@ -438,14 +438,115 @@ body {
 
 .attach-menu {
   position: absolute;
-  bottom: 60px;
-  left: 0;
 
-  z-index: 3000;
+  bottom: 56px;
+  left: 8px;
+
+  background: var(--bg-panel);
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+
+  padding: 8px;
+
+  box-shadow: var(--shadow-soft);
+
+  z-index: 2000;
+
+  min-width: 180px;
 }
 
 .attach-btn {
   touch-action: manipulation;
+}
+
+.input-bar {
+  position: relative;
+}
+
+/* ================= CAMERA UI ================= */
+
+.camera-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.6);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  pointer-events: none;
+  transition: .25s;
+  z-index: 3000;
+}
+
+.camera-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.camera-sheet {
+  position: fixed;
+  bottom: -100%;
+  left: 0;
+  width: 100%;
+  height: 80vh;
+
+  background: #000;
+  border-radius: 22px 22px 0 0;
+
+  display: flex;
+  flex-direction: column;
+
+  transition: bottom .3s ease;
+  z-index: 4000;
+}
+
+.camera-sheet.active {
+  bottom: 0;
+}
+
+.camera-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 14px 18px;
+  color: white;
+  font-weight: 700;
+}
+
+.camera-close {
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: white;
+  cursor: pointer;
+}
+
+#cameraStream {
+  flex: 1;
+  width: 100%;
+  object-fit: cover;
+  background: black;
+}
+
+.camera-controls {
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.capture-btn {
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  border: 6px solid white;
+  background: transparent;
+}
+
+.retake-btn {
+  background: none;
+  color: white;
+  font-size: 15px;
+  border: none;
 }
 
 /* ================= MOBILE ================= */
@@ -478,6 +579,10 @@ body {
 
 #overlay.active { display:block; }
 
+.attach-menu {
+  left: 50%;
+  transform: translateX(-50%);
+}
 
  </style>
 
@@ -747,20 +852,28 @@ function switchToRegister() {
 
 </div>
 
+<!-- ================= CAMERA SHEET ================= -->
+<div id="cameraOverlay" class="camera-overlay" onclick="closeCamera()"></div>
 
-<!-- ===== CAMERA MODAL ===== -->
-<div id="cameraModal" style="display:none; text-align:center;">
+<div id="cameraSheet" class="camera-sheet">
 
-  <video id="cameraStream" autoplay style="width:100%; max-width:400px;"></video>
+  <div class="camera-header">
+    <span>Scan with Camera</span>
+    <button onclick="closeCamera()" class="camera-close">✕</button>
+  </div>
 
-  <br>
+  <video id="cameraStream" autoplay playsinline></video>
 
-  <button onclick="capturePhoto()" class="btn-primary">Capture</button>
-  <button onclick="closeCamera()" class="btn-secondary">Cancel</button>
+  <div class="camera-controls">
+    <button class="retake-btn" onclick="closeCamera()">Cancel</button>
+
+    <button class="capture-btn" onclick="capturePhoto()"></button>
+  </div>
 
   <canvas id="photoCanvas" style="display:none;"></canvas>
 
 </div>
+
 
 
 <footer class="app-footer">
@@ -817,60 +930,61 @@ function toggleMenu() {
 }
 
 
-// ----- CAMERA FUNCTIONS -----
+let cameraStreamRef = null;
+
 function openCamera() {
 
-    document.getElementById("attachMenu").style.display = "none";
+  document.getElementById("attachMenu").style.display = "none";
 
-    let modal = document.getElementById("cameraModal");
-    modal.style.display = "block";
+  document.getElementById("cameraOverlay").classList.add("active");
+  document.getElementById("cameraSheet").classList.add("active");
 
-    navigator.mediaDevices.getUserMedia({ video: true })
-        .then(function (stream) {
+  navigator.mediaDevices.getUserMedia({
+    video: { facingMode: "environment" }
+  }).then(stream => {
 
-            cameraStream = stream;
+    cameraStreamRef = stream;
 
-            let video = document.getElementById("cameraStream");
-            video.srcObject = stream;
+    const video = document.getElementById("cameraStream");
+    video.srcObject = stream;
 
-        })
-        .catch(function () {
-            alert("Camera access denied or not supported");
-        });
+  }).catch(() => {
+    alert("Camera not available");
+    closeCamera();
+  });
 }
-
 
 function closeCamera() {
 
-    let modal = document.getElementById("cameraModal");
-    modal.style.display = "none";
+  document.getElementById("cameraOverlay").classList.remove("active");
+  document.getElementById("cameraSheet").classList.remove("active");
 
-    if (cameraStream) {
-        cameraStream.getTracks().forEach(track => track.stop());
-    }
+  if (cameraStreamRef) {
+    cameraStreamRef.getTracks().forEach(t => t.stop());
+    cameraStreamRef = null;
+  }
 }
-
 
 function capturePhoto() {
 
-    let video = document.getElementById("cameraStream");
-    let canvas = document.getElementById("photoCanvas");
+  const video = document.getElementById("cameraStream");
+  const canvas = document.getElementById("photoCanvas");
 
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
 
-    let ctx = canvas.getContext("2d");
-    ctx.drawImage(video, 0, 0);
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(video, 0, 0);
 
-    canvas.toBlob(function (blob) {
+  canvas.toBlob(blob => {
 
-        let file = new File([blob], "camera_image.png", { type: "image/png" });
+    const file = new File([blob], "camera.png", { type: "image/png" });
 
-        uploadCapturedImage(file);
+    uploadCapturedImage(file);
 
-    }, "image/png");
+  });
 
-    closeCamera();
+  closeCamera();
 }
 
 
@@ -988,6 +1102,43 @@ function closeSidebar() {
   overlay.classList.remove("active");
 }
 
+// ================= DELETE NOTE =================
+
+document.addEventListener("click", async function (e) {
+
+  if (!e.target.classList.contains("delete-btn")) return;
+
+  const btn = e.target;
+  const noteId = btn.dataset.noteId;
+
+  if (!noteId) return;
+
+  if (!confirm("Delete this note permanently?")) return;
+
+  const csrf = document.querySelector('meta[name="csrf-token"]').content;
+
+  try {
+
+    const res = await fetch(`/delete_note/${noteId}`, {
+      method: "POST",
+      headers: {
+        "X-CSRF-Token": csrf
+      }
+    });
+
+    if (!res.ok) {
+      const err = await res.text();
+      alert(err || "Delete failed");
+      return;
+    }
+
+    // Remove from UI
+    btn.closest("li").remove();
+
+  } catch (err) {
+    alert("Network error while deleting");
+  }
+});
 </script>
 
 </body>

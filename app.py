@@ -27,6 +27,7 @@ from pages.routes import pages_bp
 from voice.routes import voice_bp
 from stt.routes import stt_bp
 from tutor import tutor_bp
+from progress.routes import progress_bp
 
 from utils.security import generate_csrf
 
@@ -75,6 +76,7 @@ app.register_blueprint(pages_bp)
 app.register_blueprint(tutor_bp)
 app.register_blueprint(voice_bp)
 app.register_blueprint(stt_bp)
+app.register_blueprint(progress_bp)
 
 
 # ---------------- CSRF TOKEN ----------------

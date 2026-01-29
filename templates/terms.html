@@ -1,36 +1,170 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
   <title>Terms & Conditions - AI Genies</title>
+
+  <!-- Mobile friendly -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    /* ================= RESET ================= */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* ================= THEME ================= */
+    :root {
+      --bg-main: #140b05;
+      --bg-panel: #1d120a;
+      --bg-card: #120805;
+
+      --primary: #ff9a42;
+
+      --border-soft: rgba(255, 160, 80, 0.18);
+
+      --text-main: #fff2e6;
+      --text-muted: #cfa78a;
+    }
+
+    /* ================= BODY ================= */
+    body {
+      font-family: Inter, system-ui, sans-serif;
+      background: radial-gradient(circle at top, #2a140a, var(--bg-main));
+      color: var(--text-main);
+
+      min-height: 100vh;
+      padding: 28px;
+
+      display: flex;
+      justify-content: center;
+    }
+
+    /* ================= CONTAINER ================= */
+    .terms-container {
+      width: 100%;
+      max-width: 760px;
+
+      background: var(--bg-card);
+      border: 1px solid var(--border-soft);
+      border-radius: 22px;
+
+      padding: 36px 30px;
+
+      box-shadow:
+        0 30px 80px rgba(0,0,0,0.65),
+        inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    /* ================= HEADINGS ================= */
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 8px;
+
+      background: linear-gradient(135deg,#ffb066,#ff8a1f);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    h3 {
+      margin-top: 26px;
+      margin-bottom: 8px;
+      font-size: 1.15rem;
+      color: var(--primary);
+    }
+
+    /* ================= TEXT ================= */
+    p {
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    p b {
+      color: var(--text-main);
+    }
+
+    /* ================= LIST ================= */
+    ul {
+      margin: 12px 0 18px 18px;
+    }
+
+    li {
+      margin-bottom: 8px;
+      color: var(--text-muted);
+    }
+
+    /* ================= FOOTER CONTACT ================= */
+    .contact {
+      margin-top: 22px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border-soft);
+
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* ================= MOBILE ================= */
+    @media (max-width: 600px) {
+
+      body {
+        padding: 18px;
+      }
+
+      .terms-container {
+        padding: 26px 20px;
+        border-radius: 18px;
+      }
+
+      h1 {
+        font-size: 1.6rem;
+      }
+
+      p,
+      li {
+        font-size: 14px;
+      }
+    }
+  </style>
 </head>
+
 <body>
-  <h1>Terms & Conditions</h1>
-  <p>Last updated: 2026</p>
 
-  <p>
-    By using AI Genies, you agree to these terms.
-  </p>
+  <div class="terms-container">
 
-  <h3>Usage</h3>
-  <ul>
-    <li>Educational use only</li>
-    <li>No abuse or misuse</li>
-    <li>Respect usage limits</li>
-  </ul>
+    <h1>Terms & Conditions</h1>
+    <p><i>Last updated: 2026</i></p>
 
-  <h3>AI Disclaimer</h3>
-  <p>
-    AI-generated content may not be 100% accurate.
-    Verify before exams.
-  </p>
+    <p>
+      By using AI Genies, you agree to these terms.
+    </p>
 
-  <h3>Payments</h3>
-  <p>
-    Pro upgrades are non-refundable.
-  </p>
+    <h3>Usage</h3>
+    <ul>
+      <li>Educational use only</li>
+      <li>No abuse or misuse</li>
+      <li>Respect usage limits</li>
+    </ul>
 
-  <p>
-    Contact: <b>your-email@example.com</b>
-  </p>
+    <h3>AI Disclaimer</h3>
+    <p>
+      AI-generated content may not be 100% accurate.
+      Verify before exams.
+    </p>
+
+    <h3>Payments</h3>
+    <p>
+      Pro upgrades are non-refundable.
+    </p>
+
+    <p class="contact">
+      Contact: <b>your-email@example.com</b>
+    </p>
+
+  </div>
+
 </body>
 </html>
