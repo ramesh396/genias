@@ -83,6 +83,69 @@ def login():
 
     return redirect("/dashboard")
 
+# =================================================
+# FORGOT PASSWORD
+# =================================================
+@auth_bp.route("/forgot-password", methods=["GET", "POST"])
+def forgot_password():
+
+    if request.method == "GET":
+        return render_template("forgot_password.html")
+
+    verify_csrf()
+
+    email = request.form.get("email", "").strip().lower()
+
+    user = User.query.filter_by(email=email).first()
+
+    if user:
+        token = secrets.token_urlsafe(32)
+
+        user.reset_token = token
+        user.reset_token_expiry = datetime.utcnow() + timedelta(minutes=30)
+
+        db.session.commit()
+
+        reset_link = url_for(
+            "auth.reset_password",
+            token=token,
+            _external=True
+        )
+
+        current_app.logger.info(f"Password reset link: {reset_link}")
+
+    return redirect("/login")
+
+
+# =================================================
+# RESET PASSWORD
+# =================================================
+@auth_bp.route("/reset-password/<token>", methods=["GET", "POST"])
+def reset_password(token):
+
+    user = User.query.filter_by(reset_token=token).first()
+
+    if not user or user.reset_token_expiry < datetime.utcnow():
+        return "Invalid or expired reset link", 400
+
+    if request.method == "POST":
+        verify_csrf()
+
+        new_password = request.form.get("password", "").strip()
+        confirm = request.form.get("confirm_password", "").strip()
+
+        if not new_password or new_password != confirm:
+            return "Passwords do not match", 400
+
+        user.password = generate_password_hash(new_password)
+        user.reset_token = None
+        user.reset_token_expiry = None
+
+        db.session.commit()
+
+        return redirect("/login")
+
+    return render_template("reset_password.html")
 
 # =================================================
 # GOOGLE LOGIN
