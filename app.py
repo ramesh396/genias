@@ -1,10 +1,14 @@
 from flask import Flask, session
-from authlib.integrations.flask_client import OAuth
 import os
 from dotenv import load_dotenv
 
+from werkzeug.middleware.proxy_fix import ProxyFix
+
 # Load environment variables
 load_dotenv()
+
+# ---------------- EXTENSIONS ----------------
+from extensions import oauth   # ✅ SHARED OAUTH INSTANCE
 
 # SQLAlchemy + Migrations
 from flask_migrate import Migrate
@@ -22,18 +26,21 @@ from user.routes import user_bp
 from pages.routes import pages_bp
 from voice.routes import voice_bp
 from stt.routes import stt_bp
-
+from tutor import tutor_bp
 
 from utils.security import generate_csrf
-from tutor import tutor_bp
 
 
 # ---------------- APP CONFIG ----------------
 app = Flask(__name__)
 
+# Fix proxy headers on Render (https/oauth)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev_secret_key")
 
-# ----------- POSTGRESQL CONFIGURATION (RENDER SAFE) -----------
+
+# ----------- POSTGRESQL CONFIGURATION -----------
 
 db_url = os.getenv("DATABASE_URL")
 
@@ -48,12 +55,14 @@ app.config["SQLALCHEMY_DATABASE_URI"] = db_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 
-# Initialize DB
+# ---------------- INIT DB ----------------
+
 db.init_app(app)
 migrate = Migrate(app, db)
 
 
 # ---------------- REGISTER BLUEPRINTS ----------------
+
 app.register_blueprint(payments_bp)
 app.register_blueprint(auth_bp)
 app.register_blueprint(admin_bp)
@@ -68,17 +77,15 @@ app.register_blueprint(voice_bp)
 app.register_blueprint(stt_bp)
 
 
-# CSRF Token available in templates
+# ---------------- CSRF TOKEN ----------------
+
 app.jinja_env.globals["csrf_token"] = generate_csrf
 
 
-# ---------------- USER CONTEXT PROCESSOR ----------------
+# ---------------- USER CONTEXT ----------------
+
 @app.context_processor
 def inject_user():
-    """
-    Makes user information automatically available
-    in ALL templates
-    """
 
     username = session.get("username")
     plan = "free"
@@ -90,7 +97,6 @@ def inject_user():
             plan = user.plan
             role = user.role
 
-            # Keep session synced with database
             session["plan"] = user.plan
             session["role"] = user.role
 
@@ -101,11 +107,12 @@ def inject_user():
     )
 
 
-# ---------------- GOOGLE AUTH (Single Instance) ----------------
+# ---------------- GOOGLE AUTH ----------------
+
 app.config["GOOGLE_CLIENT_ID"] = os.getenv("GOOGLE_CLIENT_ID")
 app.config["GOOGLE_CLIENT_SECRET"] = os.getenv("GOOGLE_CLIENT_SECRET")
 
-oauth = OAuth(app)
+oauth.init_app(app)
 
 oauth.register(
     name="google",
@@ -116,11 +123,7 @@ oauth.register(
 )
 
 
-# ---------------- CREATE TABLES (Safety) ----------------
-with app.app_context():
-    db.create_all()
-
-
 # ---------------- RUN ----------------
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
