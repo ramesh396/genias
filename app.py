@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 
 from werkzeug.middleware.proxy_fix import ProxyFix
+from flask import Flask, session, render_template
 
 # Load environment variables
 load_dotenv()
@@ -124,6 +125,10 @@ oauth.register(
     client_kwargs={"scope": "openid email profile"}
 )
 
+
+@app.route("/offline")
+def offline():
+    return render_template("offline.html")
 
 # ---------------- RUN ----------------
 
