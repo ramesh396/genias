@@ -726,6 +726,9 @@ function switchToRegister() {
     <a href="/settings" class="btn-secondary">⚙️ Settings</a>
     <button onclick="toggleTheme()" class="btn-secondary">🌙 / ☀️</button>
     <a href="/logout" class="logout">Logout</a>
+ <button id="installBtn" class="btn-primary" style="display:none;">
+  📲 Install App
+</button>
 
     {% if username == "admin" %}
       <a href="/admin" class="btn-secondary">👑 Admin</a>
