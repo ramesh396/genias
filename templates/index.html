@@ -705,6 +705,9 @@ function switchToRegister() {
 
 <!-- ================= TOP BAR ================= -->
 <div class="topbar">
+   <button id="installBtn" class="btn-primary" style="display:none;">
+  📲 Install App
+</button>
 
   <button class="btn-secondary mobile-menu-btn" onclick="toggleSidebar()">
     ☰
@@ -1148,6 +1151,41 @@ document.addEventListener("click", async function (e) {
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("/static/sw.js");
 }
+
+let deferredPrompt;
+const installBtn = document.getElementById("installBtn");
+
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+
+  if (installBtn) {
+    installBtn.style.display = "inline-flex";
+  }
+});
+
+if (installBtn) {
+  installBtn.addEventListener("click", async () => {
+    if (!deferredPrompt) return;
+
+    deferredPrompt.prompt();
+
+    const choice = await deferredPrompt.userChoice;
+
+    if (choice.outcome === "accepted") {
+      console.log("User installed app");
+    }
+
+    deferredPrompt = null;
+    installBtn.style.display = "none";
+  });
+}
+
+window.addEventListener("appinstalled", () => {
+  if (installBtn) {
+    installBtn.style.display = "none";
+  }
+});
 
 </script>
 
