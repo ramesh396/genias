@@ -1,4 +1,4 @@
-const CACHE_NAME = "salapa-v1";
+const CACHE_NAME = "salapa-v2";
 const OFFLINE_URL = "/offline";
 
 self.addEventListener("install", event => {
