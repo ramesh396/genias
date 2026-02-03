@@ -113,6 +113,28 @@ h1 {
   box-shadow: 0 14px 34px rgba(34,197,94,0.45);
 }
 
+.start-btn.locked {
+  background: rgba(255,255,255,0.08);
+  border: 1px dashed var(--border-soft);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.start-btn.locked:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.lock-banner {
+  margin: 14px 0 20px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border-soft);
+  background: rgba(255,255,255,0.05);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
 /* ================= EMPTY ================= */
 .empty {
   margin-top: 60px;
@@ -184,6 +206,11 @@ h1 {
       Strengthen memory using active recall.<br>
       Answer without looking at notes.
     </p>
+    {% if plan != "pro" %}
+    <div class="lock-banner">
+      Pro feature: upgrade to unlock Memory Tests.
+    </div>
+    {% endif %}
   </div>
 
   {% if notes %}
@@ -194,9 +221,15 @@ h1 {
           {{ n.lesson }}
         </div>
 
-        <a href="/memory/start?note_id={{ n.id }}" class="start-btn">
-          Start Memory Test →
-        </a>
+        {% if plan == "pro" %}
+          <a href="/memory/start?note_id={{ n.id }}" class="start-btn">
+            Start Memory Test →
+          </a>
+        {% else %}
+          <button class="start-btn locked" onclick="goPro()">
+            Locked • Upgrade to Pro →
+          </button>
+        {% endif %}
       </div>
       {% endfor %}
     </div>
@@ -211,6 +244,12 @@ h1 {
 <div class="back-bar">
   <a href="/dashboard" class="back-btn">← Back to Dashboard</a>
 </div>
+
+<script>
+function goPro() {
+  window.location.href = "/upgrade";
+}
+</script>
 
 </body>
 </html>

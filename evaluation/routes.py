@@ -16,7 +16,7 @@ def evaluate_page():
     plan = get_user_plan(session["user_id"])
 
     if plan != "pro" and not is_admin():
-        return redirect("/pricing")
+        return render_template("evaluate_locked.html")
 
     return render_template("evaluate.html")
 

@@ -165,12 +165,16 @@ document.getElementById("payBtn").onclick = async () => {
         form.method = "POST";
         form.action = "/payment_success";
 
-        ["razorpay_payment_id","razorpay_order_id","razorpay_signature"]
+        ["razorpay_payment_id","razorpay_order_id","razorpay_signature","csrf_token"]
           .forEach(k => {
             const i = document.createElement("input");
             i.type = "hidden";
             i.name = k;
-            i.value = response[k];
+            if (k === "csrf_token") {
+              i.value = document.querySelector('meta[name="csrf-token"]').content;
+            } else {
+              i.value = response[k];
+            }
             form.appendChild(i);
           });
 
