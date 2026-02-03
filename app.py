@@ -17,6 +17,7 @@ from models_pg import db, User
 
 # Blueprints
 from payments.routes import payments_bp
+from payments.webhook import payments_webhook_bp
 from auth.routes import auth_bp
 from admin.routes import admin_bp
 from chat.routes import chat_bp
@@ -66,6 +67,7 @@ migrate = Migrate(app, db)
 # ---------------- REGISTER BLUEPRINTS ----------------
 
 app.register_blueprint(payments_bp)
+app.register_blueprint(payments_webhook_bp)
 app.register_blueprint(auth_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(chat_bp)
