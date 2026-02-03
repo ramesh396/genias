@@ -104,3 +104,9 @@ def payment_success():
         return "Failed to save payment details", 500
 
     return redirect("/dashboard")
+
+
+# Handle direct GET access (e.g., user refreshes or pastes URL)
+@payments_bp.route("/payment_success", methods=["GET"])
+def payment_success_get():
+    return redirect("/dashboard")
