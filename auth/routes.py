@@ -195,3 +195,12 @@ def google_callback():
     })
 
     return redirect("/dashboard")
+
+
+# =================================================
+# LOGOUT
+# =================================================
+@auth_bp.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/login")
