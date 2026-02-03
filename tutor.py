@@ -4,10 +4,11 @@ from ai.notes import generate_notes_with_groq
 from PIL import Image
 import pytesseract
 from flask import current_app
-from utils.db_helpers import get_user_plan
+from utils.db_helpers import get_user_plan, is_admin
 
 # ----- IMPORTANT: Change this to your real DB import -----
-from models_pg import StudentProgress, db
+from models_pg import StudentProgress, TutorMessage, db
+from datetime import date
 
 
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
@@ -71,6 +72,11 @@ def ask_tutor():
 
     # ---------- DAILY FREE LIMIT (10) ----------
     if plan == "free" and not is_admin():
+        current_app.logger.info(
+            "Tutor free-limit check for user_id=%s plan=%s",
+            user_id,
+            plan
+        )
 
         today_count = TutorMessage.query.filter(
             TutorMessage.user_id == user_id,
