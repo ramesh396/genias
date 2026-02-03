@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Notes Maker</title>
+  <title>Salapa</title>
   <meta name="csrf-token" content="{{ csrf_token() }}">
 
  <style>
@@ -176,6 +176,47 @@ body {
 
   font-weight: 700;
   text-decoration: none;
+}
+
+.plan-card {
+  margin: 6px 0 12px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid var(--border-soft);
+  background: rgba(255,255,255,0.05);
+}
+
+.plan-card h4 {
+  font-size: 12px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.plan-card p {
+  font-size: 13px;
+  color: var(--text-main);
+  margin-bottom: 10px;
+}
+
+.plan-card .upgrade-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-weight: 800;
+  text-decoration: none;
+  background: linear-gradient(135deg,#ffb066,#ff8a1f);
+  color: #2a1408;
+}
+
+.locked-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 6px;
 }
 
 .sidebar-btn:hover {
@@ -775,10 +816,19 @@ function switchToRegister() {
 
   <div class="sidebar-title">Features</div>
 
+  {% if plan != "pro" %}
+  <div class="plan-card">
+    <h4>Free Plan</h4>
+    <p>Unlock Memory Tests, Evaluations, and more in Pro.</p>
+    <a class="upgrade-cta" href="/upgrade">Upgrade to Pro</a>
+  </div>
+  {% endif %}
+
   {% if plan == "pro" %}
     <a href="/memory" class="memory-test">🧠 Memory Test</a>
   {% else %}
     <button class="memory-test locked" onclick="goPro()">🧠 Memory Test</button>
+    <div class="locked-hint">Pro feature • Tap to upgrade</div>
   {% endif %}
 
   <hr class="sidebar-divider">
@@ -793,6 +843,7 @@ function switchToRegister() {
     <button class="sidebar-btn eval-btn locked" onclick="goPro()">
       🧠 Evaluate Answer
     </button>
+    <div class="locked-hint">Pro feature • Tap to upgrade</div>
   {% endif %}
   
     <a href="/progress" class="sidebar-btn">

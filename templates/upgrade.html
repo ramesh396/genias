@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>🚀 Upgrade to Pro • AI Genies</title>
+<title>🚀 Upgrade to Pro • Salapa</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="csrf-token" content="{{ csrf_token() }}">
 
 <style>
 /* ================= RESET ================= */
@@ -81,6 +82,13 @@ h1 { font-size: 2rem; font-weight: 900; }
   background: linear-gradient(135deg,#ffd29c,var(--primary),var(--primary-hover));
 }
 
+.status {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--text-muted);
+  min-height: 18px;
+}
+
 .back {
   display: inline-block;
   margin-top: 18px;
@@ -109,6 +117,7 @@ h1 { font-size: 2rem; font-weight: 900; }
 
   <!-- ✅ SINGLE BUTTON -->
   <button class="btn" id="payBtn">Upgrade to Pro</button>
+  <div class="status" id="payStatus"></div>
 
   <div class="subtitle">🔒 Secure payment • One-time • No auto-charge</div>
   <a href="/dashboard" class="back">← Back to Dashboard</a>
@@ -120,14 +129,33 @@ h1 { font-size: 2rem; font-weight: 900; }
 <script>
 document.getElementById("payBtn").onclick = async () => {
   try {
-    const res = await fetch("/create_order", { method: "POST" });
+    const btn = document.getElementById("payBtn");
+    const status = document.getElementById("payStatus");
+    btn.disabled = true;
+    btn.innerText = "Starting payment...";
+    status.innerText = "Creating your secure order...";
+
+    const csrf = document.querySelector('meta[name="csrf-token"]').content;
+    const formData = new FormData();
+    formData.append("csrf_token", csrf);
+
+    const res = await fetch("/create_order", {
+      method: "POST",
+      body: formData
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(errText || "Order creation failed");
+    }
+
     const data = await res.json();
 
     const options = {
       key: data.key,
       amount: 9900,
       currency: "INR",
-      name: "AI Genies",
+      name: "Salapa",
       description: "Pro Plan",
       order_id: data.order_id,
 
@@ -152,10 +180,18 @@ document.getElementById("payBtn").onclick = async () => {
     };
 
     new Razorpay(options).open();
+    status.innerText = "";
+    btn.disabled = false;
+    btn.innerText = "Upgrade to Pro";
 
   } catch (err) {
     alert("Payment error. Try again.");
     console.error(err);
+    const btn = document.getElementById("payBtn");
+    const status = document.getElementById("payStatus");
+    btn.disabled = false;
+    btn.innerText = "Upgrade to Pro";
+    status.innerText = "We couldn't start the payment. Please try again.";
   }
 };
 </script>
