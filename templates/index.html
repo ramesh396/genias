@@ -178,6 +178,18 @@ body {
   text-decoration: none;
 }
 
+.sidebar-btn.locked,
+.memory-test.locked {
+  background: rgba(255,255,255,0.03);
+  border: 1px dashed rgba(255, 160, 80, 0.35);
+  color: var(--text-muted);
+}
+
+.sidebar-btn.locked:hover,
+.memory-test.locked:hover {
+  background: rgba(255,255,255,0.05);
+}
+
 .plan-card {
   margin: 6px 0 12px;
   padding: 12px;
@@ -827,7 +839,7 @@ function switchToRegister() {
   {% if plan == "pro" %}
     <a href="/memory" class="memory-test">🧠 Memory Test</a>
   {% else %}
-    <button class="memory-test locked" onclick="goPro()">🧠 Memory Test</button>
+    <button class="memory-test locked" onclick="goPro()">🔒 🧠 Memory Test</button>
     <div class="locked-hint">Pro feature • Tap to upgrade</div>
   {% endif %}
 
@@ -841,7 +853,7 @@ function switchToRegister() {
     <a href="/evaluate" class="sidebar-btn eval-btn">🧠 Evaluate Answer</a>
   {% else %}
     <button class="sidebar-btn eval-btn locked" onclick="goPro()">
-      🧠 Evaluate Answer
+      🔒 🧠 Evaluate Answer
     </button>
     <div class="locked-hint">Pro feature • Tap to upgrade</div>
   {% endif %}
