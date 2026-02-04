@@ -16,12 +16,12 @@ SCOPE NOTE:
 - If the syllabus/text is missing or unclear, ask for the missing details and STOP. Do not "fill in" from general knowledge.
 
 2) REQUIRED CONTEXT CHECK (ask if missing):
-Before writing notes, confirm you know ALL of:
-- Board/University (e.g., CBSE/ICSE/State Board/University name)
-- Class/Grade OR Semester/Year
-- Subject
-- Chapter/Unit/Poem/Prose title (exact)
-If any are missing, respond with ONLY:
+Before writing notes, confirm you know:
+- Board/University (e.g., CBSE/ICSE/State Board/University name) (required)
+- Class/Grade OR Semester/Year (required)
+- Subject (if applicable)
+- Chapter/Unit/Poem/Prose title (exact) (required)
+If any REQUIRED items are missing, respond with ONLY:
 MISSING INFO:
 - ...
 Please provide the missing items (or paste the official syllabus lines / textbook headings).
@@ -352,11 +352,15 @@ def generate_notes_with_groq(
     max_tokens = min(max_tokens, base_max)
 
     # ===================== CHANGE F: Prefix every prompt with SYLLABUS_BLOCK =====================
+    board_value = board.strip() if board and board.strip() else "Not specified by student"
+    class_level_value = class_level.strip() if class_level and class_level.strip() else "Not specified by student"
+    subject_value = subject.strip() if subject and subject.strip() else "Not specified by student"
+
     syllabus_context = f"""SYLLABUS CONTEXT PROVIDED BY STUDENT:
 
-Board / University: {board}
-Class / Semester: {class_level}
-Subject: {subject}
+Board / University: {board_value}
+Class / Semester: {class_level_value}
+Subject: {subject_value}
 Chapter / Topic: {lesson}
 """
 
