@@ -252,6 +252,50 @@ body {
   gap: 16px;
 }
 
+/* ================= SYLLABUS DETAILS PANEL (NEW) ================= */
+.syllabus-panel {
+  background: var(--bg-chat);
+  border: 1px solid var(--border-soft);
+  border-radius: 18px;
+  padding: 16px;
+}
+
+.syllabus-panel h4 {
+  font-size: 12px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-main);
+  margin-bottom: 4px;
+}
+
+.syllabus-panel p {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.syllabus-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.syllabus-field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.syllabus-field select {
+  width: 100%;
+}
+
+@media(max-width:900px){
+  .syllabus-grid { grid-template-columns: 1fr; }
+}
+
 /* ================= INPUTS ================= */
 
 input, textarea, select {
@@ -898,6 +942,61 @@ function switchToRegister() {
 
   <h3>Generate Notes</h3>
 
+  <!-- ===== SYLLABUS DETAILS (NEW) ===== -->
+  <div class="syllabus-panel">
+    <h4>Syllabus Details</h4>
+    <p>Required for syllabus-strict notes generation.</p>
+
+    <div class="syllabus-grid">
+      <div class="syllabus-field">
+        <label for="board">Board / University</label>
+        <select id="board">
+          <option value="">Select Board / University</option>
+          <option value="CBSE">CBSE</option>
+          <option value="ICSE">ICSE</option>
+          <option value="State Board">State Board</option>
+          <option value="PU">PU</option>
+          <option value="VTU">VTU</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div class="syllabus-field">
+        <label for="classLevel">Class / Semester</label>
+        <select id="classLevel">
+          <option value="">Select Class / Semester</option>
+          <option value="Class 8">Class 8</option>
+          <option value="Class 9">Class 9</option>
+          <option value="Class 10">Class 10</option>
+          <option value="Class 11">Class 11</option>
+          <option value="Class 12">Class 12</option>
+          <option value="Semester 1">Semester 1</option>
+          <option value="Semester 2">Semester 2</option>
+          <option value="Semester 3">Semester 3</option>
+          <option value="Semester 4">Semester 4</option>
+          <option value="Semester 5">Semester 5</option>
+          <option value="Semester 6">Semester 6</option>
+        </select>
+      </div>
+
+      <div class="syllabus-field">
+        <label for="subject">Subject</label>
+        <select id="subject">
+          <option value="">Select Subject</option>
+          <option value="Physics">Physics</option>
+          <option value="Chemistry">Chemistry</option>
+          <option value="Biology">Biology</option>
+          <option value="Maths">Maths</option>
+          <option value="English">English</option>
+          <option value="History">History</option>
+          <option value="Geography">Geography</option>
+          <option value="Computer Science">Computer Science</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <!-- ===== END SYLLABUS DETAILS ===== -->
+
   <input id="lesson" placeholder="Enter topic (e.g. Cell Structure)">
 
   <select id="mode">
@@ -1115,6 +1214,15 @@ async function uploadCapturedImage(file) {
 
 async function generateNotes() {
 
+    let board = document.getElementById("board").value;
+    let classLevel = document.getElementById("classLevel").value;
+    let subject = document.getElementById("subject").value;
+
+    if (!board || !classLevel || !subject) {
+        alert("Please select Board, Class/Semester, and Subject before generating notes.");
+        return;
+    }
+
     let lesson = document.getElementById("lesson").value.trim();
     let mode = document.getElementById("mode").value;
     let userPrompt = document.getElementById("user_prompt").value.trim();
@@ -1127,6 +1235,9 @@ async function generateNotes() {
     let csrf = document.querySelector('meta[name="csrf-token"]').content;
 
     let formData = new FormData();
+    formData.append("board", board);
+    formData.append("class_level", classLevel);
+    formData.append("subject", subject);
     formData.append("lesson", lesson);
     formData.append("mode", mode);
     formData.append("user_prompt", userPrompt);
