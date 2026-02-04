@@ -302,7 +302,10 @@ def generate_notes_with_groq(
     mode: str = "board",
     user_prompt: str = "",
     plan: str = "free",
-    history=None
+    history=None,
+    board: str = "",
+    class_level: str = "",
+    subject: str = ""
 ):
     if not lesson or lesson.strip() == "":
         return "Please enter a valid topic."
@@ -349,7 +352,15 @@ def generate_notes_with_groq(
     max_tokens = min(max_tokens, base_max)
 
     # ===================== CHANGE F: Prefix every prompt with SYLLABUS_BLOCK =====================
-    prompt = f"{SYLLABUS_BLOCK}\n{prompt}"
+    syllabus_context = f"""SYLLABUS CONTEXT PROVIDED BY STUDENT:
+
+Board / University: {board}
+Class / Semester: {class_level}
+Subject: {subject}
+Chapter / Topic: {lesson}
+"""
+
+    prompt = f"{SYLLABUS_BLOCK}\n{syllabus_context}\n{prompt}"
     # =================== END CHANGE F ===================
 
     return groq_generate(
@@ -358,4 +369,3 @@ def generate_notes_with_groq(
         temperature=temperature,
         history=history
     )
-

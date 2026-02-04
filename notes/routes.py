@@ -60,6 +60,9 @@ def generate_stream():
     lesson = request.form.get("lesson", "")
     mode = request.form.get("mode", "board")
     user_prompt = request.form.get("user_prompt", "")
+    board = request.form.get("board", "")
+    class_level = request.form.get("class_level", "")
+    subject = request.form.get("subject", "")
 
     # FREE LIMIT CHECK
     if plan == "free" and not is_admin():
@@ -80,6 +83,9 @@ def generate_stream():
             lesson=lesson,
             mode=mode,
             user_prompt=user_prompt,
+            board=board,
+            class_level=class_level,
+            subject=subject,
             plan=plan
         )
     except Exception:
@@ -260,6 +266,9 @@ def generate_from_image():
             lesson="Image Based Notes",
             mode=request.form.get("mode", "board"),
             user_prompt=extracted_text,
+            board=request.form.get("board", ""),
+            class_level=request.form.get("class_level", ""),
+            subject=request.form.get("subject", ""),
             plan=get_user_plan(session["user_id"])
         )
 
