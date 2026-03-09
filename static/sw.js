@@ -1,5 +1,5 @@
 const CACHE_NAME = "salapa-v2";
-const OFFLINE_URL = "/offline";
+const OFFLINE_URL = "/offline/index.html";
 
 self.addEventListener("install", event => {
   event.waitUntil(
@@ -11,8 +11,11 @@ self.addEventListener("install", event => {
 
 self.addEventListener("fetch", event => {
   event.respondWith(
-    fetch(event.request).catch(() =>
-      caches.match(event.request)
-    )
+    fetch(event.request).catch(async () => {
+      const cached = await caches.match(event.request);
+      if (cached) return cached;
+
+      return caches.match(OFFLINE_URL);
+    })
   );
 });

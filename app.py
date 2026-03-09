@@ -63,7 +63,8 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)
 migrate = Migrate(app, db)
 
-
+with app.app_context():
+    db.create_all()
 # ---------------- REGISTER BLUEPRINTS ----------------
 
 app.register_blueprint(payments_bp)
