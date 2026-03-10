@@ -291,6 +291,37 @@ body {
 .syllabus-field select {
   width: 100%;
 }
+.ai-note-card{
+    background: var(--card-bg);
+    padding: 28px;
+    border-radius: 12px;
+    line-height: 1.7;
+    font-size: 15px;
+    margin-top: 20px;
+}
+
+.ai-note-card h1{
+    font-size: 26px;
+    margin-bottom: 12px;
+}
+
+.ai-note-card h2{
+    margin-top: 22px;
+    margin-bottom: 10px;
+}
+
+.ai-note-card h3{
+    margin-top: 18px;
+    margin-bottom: 8px;
+}
+
+.ai-note-card ul{
+    padding-left: 20px;
+}
+
+.ai-note-card li{
+    margin-bottom: 6px;
+}
 
 @media(max-width:900px){
   .syllabus-grid { grid-template-columns: 1fr; }
@@ -718,15 +749,16 @@ body {
 <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
 
 </head>
-
 <body>
 
 <div id="overlay" onclick="closeSidebar()"></div>
+
 <div class="container">
 
 {% if not username %}
 
 <!-- ================= AUTH PAGE ================= -->
+
 <div class="login-wrapper">
   <div class="login-card">
 
@@ -736,93 +768,69 @@ body {
       Smart notes. Faster revision. Better scores.
     </p>
 
-    <!-- ================= FORM ================= -->
+<form method="POST" id="authForm" action="/login">
 
-    <form method="POST" id="authForm" action="/login">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
-      <!-- USERNAME (hidden initially for register) -->
-      <div class="input-group" id="usernameGroup" style="display:none;">
-        <label>Username</label>
-        <input type="text" name="username">
-      </div>
-
-      <!-- EMAIL -->
-      <div class="input-group">
-        <label>Email address</label>
-        <input type="email" name="email" required>
-      </div>
-
-      <!-- PASSWORD -->
-      <div class="input-group">
-        <label>Password</label>
-        <input type="password" name="password" required>
-      </div>
-
-      <!-- ================= ACTIONS ================= -->
-
-      <div class="auth-actions">
-
-        <button
-          type="submit"
-          class="btn-primary login-btn"
-          id="loginBtn">
-          Sign in
-        </button>
-
-        <button
-          type="button"
-          class="btn-secondary login-btn"
-          onclick="switchToRegister()">
-          Create account
-        </button>
-
-      </div>
-
-      <!-- ================= GOOGLE ================= -->
-
-      <div class="divider">
-        <span>OR CONTINUE WITH</span>
-      </div>
-
-      <a href="/login/google" class="google-btn">
-        <img src="https://www.svgrepo.com/show/475656/google-color.svg">
-        Sign in with Google
-      </a>
-
-    </form>
-
-    <!-- ================= FORGOT PASSWORD ================= -->
-
-    <div class="text-center mt-3">
-      <a href="{{ url_for('auth.forgot_password') }}" class="forgot-link">
-        Forgot password?
-      </a>
-    </div>
-
-    <!-- ================= FOOTER ================= -->
-
-    <p class="login-footer">
-      By continuing, you agree to our
-      <a href="/terms">Terms</a> &
-      <a href="/privacy">Privacy Policy</a>
-    </p>
-
-  </div>
+<div class="input-group" id="usernameGroup" style="display:none;">
+<label>Username</label>
+<input type="text" name="username">
 </div>
 
-<!-- ================= REGISTER SWITCH SCRIPT ================= -->
+<div class="input-group">
+<label>Email address</label>
+<input type="email" name="email" required>
+</div>
+
+<div class="input-group">
+<label>Password</label>
+<input type="password" name="password" required>
+</div>
+
+<div class="auth-actions">
+
+<button type="submit" class="btn-primary login-btn" id="loginBtn">
+Sign in
+</button>
+
+<button type="button" class="btn-secondary login-btn" onclick="switchToRegister()">
+Create account
+</button>
+
+</div>
+
+<div class="divider">
+<span>OR CONTINUE WITH</span>
+</div>
+
+<a href="/login/google" class="google-btn">
+<img src="https://www.svgrepo.com/show/475656/google-color.svg">
+Sign in with Google
+</a>
+
+</form>
+
+<div class="text-center mt-3">
+<a href="{{ url_for('auth.forgot_password') }}" class="forgot-link">
+Forgot password?
+</a>
+</div>
+
+<p class="login-footer">
+By continuing, you agree to our
+<a href="/terms">Terms</a> &
+<a href="/privacy">Privacy Policy</a>
+</p>
+
+</div>
+</div>
 
 <script>
 function switchToRegister() {
-
-  document.getElementById("usernameGroup").style.display = "block";
-
-  const form = document.getElementById("authForm");
-  form.action = "/register";
-
-  document.getElementById("loginBtn").innerText = "Register";
+document.getElementById("usernameGroup").style.display="block"
+const form=document.getElementById("authForm")
+form.action="/register"
+document.getElementById("loginBtn").innerText="Register"
 }
 </script>
 
@@ -831,219 +839,188 @@ function switchToRegister() {
 </div>
 
 <!-- ================= TOP BAR ================= -->
+
 <div class="topbar">
-   
 
-  <button class="btn-secondary mobile-menu-btn" onclick="toggleSidebar()">
-    ☰
-  </button>
-
-  <h2>
-    {{ username }}
-    {% if plan == "pro" %}
-      <span class="badge pro">PRO</span>
-    {% else %}
-      <span class="badge free">FREE</span>
-    {% endif %}
-  </h2>
-
-  <div>
-    <a href="/settings" class="btn-secondary">⚙️ Settings</a>
-    <button onclick="toggleTheme()" class="btn-secondary">🌙 / ☀️</button>
-    <a href="/logout" class="logout">Logout</a>
-
- <button id="installBtn" class="btn-primary" style="display:none;">
-  📲 Install App
+<button class="btn-secondary mobile-menu-btn" onclick="toggleSidebar()">
+☰
 </button>
 
-    {% if username == "admin" %}
-      <a href="/admin" class="btn-secondary">👑 Admin</a>
-    {% endif %}
-  </div>
+<h2>
+
+{{ username }}
+
+{% if plan == "pro" %}
+<span class="badge pro">PRO</span>
+{% else %}
+<span class="badge free">FREE</span>
+{% endif %}
+
+</h2>
+
+<div>
+
+<a href="/settings" class="btn-secondary">⚙️ Settings</a>
+
+<button onclick="toggleTheme()" class="btn-secondary">
+🌙 / ☀️
+</button>
+
+<a href="/logout" class="logout">Logout</a>
+
+<button id="installBtn" class="btn-primary" style="display:none;">
+📲 Install App
+</button>
+
+{% if username == "admin" %}
+<a href="/admin" class="btn-secondary">👑 Admin</a>
+{% endif %}
 
 </div>
 
+</div>
 
 <!-- ================= APP LAYOUT ================= -->
+
 <div class="app-layout">
 
-<!-- ===== SIDEBAR ===== -->
+<!-- ================= SIDEBAR ================= -->
+
 <div class="sidebar">
 
-  <div class="sidebar-title">Features</div>
+<div class="sidebar-title">Features</div>
 
-  {% if plan != "pro" %}
-  <div class="plan-card">
-    <h4>Free Plan</h4>
-    <p>Unlock Memory Tests, Evaluations, and more in Pro.</p>
-    <a class="upgrade-cta" href="/upgrade">Upgrade to Pro</a>
-  </div>
-  {% endif %}
+{% if plan != "pro" %}
 
-  {% if plan == "pro" %}
-    <a href="/memory" class="memory-test">🧠 Memory Test</a>
-  {% else %}
-    <button class="memory-test locked" onclick="goPro()">🔒 🧠 Memory Test</button>
-    <div class="locked-hint">Pro feature • Tap to upgrade</div>
-  {% endif %}
+<div class="plan-card">
+<h4>Free Plan</h4>
+<p>Unlock Memory Tests, Evaluations, and more in Pro.</p>
+<a class="upgrade-cta" href="/upgrade">Upgrade to Pro</a>
+</div>
 
-  <hr class="sidebar-divider">
+{% endif %}
 
-  <div class="sidebar-title">Tools</div>
+{% if plan == "pro" %}
+<a href="/memory" class="memory-test">🧠 Memory Test</a>
+{% else %}
+<button class="memory-test locked" onclick="goPro()">🔒 🧠 Memory Test</button>
+<div class="locked-hint">Pro feature • Tap to upgrade</div>
+{% endif %}
 
-  <a href="/chat" class="sidebar-btn">💬 AI Doubt Chat</a>
+<hr class="sidebar-divider">
 
-  {% if plan == "pro" %}
-    <a href="/evaluate" class="sidebar-btn eval-btn">🧠 Evaluate Answer</a>
-  {% else %}
-    <button class="sidebar-btn eval-btn locked" onclick="goPro()">
-      🔒 🧠 Evaluate Answer
-    </button>
-    <div class="locked-hint">Pro feature • Tap to upgrade</div>
-  {% endif %}
-  
-    <a href="/progress" class="sidebar-btn">
-  📊 Progress Dashboard
-</a>
+<div class="sidebar-title">Tools</div>
+
+<a href="/chat" class="sidebar-btn">💬 AI Doubt Chat</a>
+
+{% if plan == "pro" %}
+<a href="/evaluate" class="sidebar-btn">🧠 Evaluate Answer</a>
+{% else %}
+<button class="sidebar-btn locked" onclick="goPro()">🔒 Evaluate Answer</button>
+<div class="locked-hint">Pro feature • Tap to upgrade</div>
+{% endif %}
+
+<a href="/progress" class="sidebar-btn">📊 Progress Dashboard</a>
 
 <a href="/tutor" class="sidebar-btn">🤖 AI Tutor</a>
 
-  <hr class="sidebar-divider">
+<hr class="sidebar-divider">
 
-  <button class="sidebar-btn notes-toggle" onclick="toggleNotes()">
-    📚 Your Notes <span id="notesArrow">▾</span>
-  </button>
+<button class="sidebar-btn notes-toggle" onclick="toggleNotes()">
+📚 Your Notes <span id="notesArrow">▾</span>
+</button>
 
-  <div id="notesList" class="notes-wrapper">
+<div id="notesList" class="notes-wrapper">
 
-    {% if notes|length == 0 %}
-      <p style="color: var(--text-muted); font-size: 13px;">
-        No notes yet. Generate your first note 📘
-      </p>
-    {% else %}
-      <ul class="notes-list">
-        {% for n in notes %}
-        <li>
-          <span>{{ n["lesson"] }}</span>
-          <a href="/note/{{ n['id'] }}" class="view-btn">👁 View</a>
-          <button class="delete-btn" data-note-id="{{ n['id'] }}">🗑 Delete</button>
-        </li>
-        {% endfor %}
-      </ul>
-    {% endif %}
+{% if notes|length == 0 %}
 
-  </div>
+<p style="color:var(--text-muted);font-size:13px">
+No notes yet. Generate your first note 📘
+</p>
+
+{% else %}
+
+<ul class="notes-list">
+
+{% for n in notes %}
+
+<li>
+
+<span>{{ n["lesson"] }}</span>
+
+<a href="/note/{{ n['id'] }}" class="view-btn">👁 View</a>
+
+<button class="delete-btn" data-note-id="{{ n['id'] }}">
+🗑 Delete
+</button>
+
+</li>
+
+{% endfor %}
+
+</ul>
+
+{% endif %}
 
 </div>
 
+</div>
 
-<!-- ===== MAIN PANEL ===== -->
+<!-- ================= MAIN PANEL ================= -->
+
 <div class="main-panel">
 
-  <h3>Generate Notes</h3>
+<h3>Generate Study Notes</h3>
 
-  <!-- ===== SYLLABUS DETAILS (NEW) ===== -->
-  <div class="syllabus-panel">
-    <h4>Syllabus Details</h4>
-    <p>Required for syllabus-strict notes generation.</p>
+<p class="notes-subtitle">
+Enter any topic or chapter. AI will automatically detect the subject and generate full notes.
+</p>
 
-    <div class="syllabus-grid">
-      <div class="syllabus-field">
-        <label for="board">Board / University</label>
-        <select id="board">
-          <option value="">Select Board / University</option>
-          <option value="CBSE">CBSE</option>
-          <option value="ICSE">ICSE</option>
-          <option value="State Board">State Board</option>
-          <option value="PU">PU</option>
-          <option value="VTU">VTU</option>
-          <option value="Other">Other</option>
-        </select>
-      </div>
+<input
+id="lesson"
+class="topic-input"
+placeholder="Example: Photosynthesis or Gentleman of the Jungle"
+/>
 
-      <div class="syllabus-field">
-        <label for="classLevel">Class / Semester</label>
-        <select id="classLevel">
-          <option value="">Select Class / Semester</option>
-          <option value="Class 8">Class 8</option>
-          <option value="Class 9">Class 9</option>
-          <option value="Class 10">Class 10</option>
-          <option value="Class 11">Class 11</option>
-          <option value="Class 12">Class 12</option>
-          <option value="Semester 1">Semester 1</option>
-          <option value="Semester 2">Semester 2</option>
-          <option value="Semester 3">Semester 3</option>
-          <option value="Semester 4">Semester 4</option>
-          <option value="Semester 5">Semester 5</option>
-          <option value="Semester 6">Semester 6</option>
-        </select>
-      </div>
+<textarea
+id="user_prompt"
+rows="5"
+placeholder="Optional: paste your textbook paragraph or lesson text here..."
+></textarea>
 
-      <div class="syllabus-field">
-        <label for="subject">Subject</label>
-        <select id="subject">
-          <option value="">Select Subject</option>
-          <option value="Physics">Physics</option>
-          <option value="Chemistry">Chemistry</option>
-          <option value="Biology">Biology</option>
-          <option value="Maths">Maths</option>
-          <option value="English">English</option>
-          <option value="History">History</option>
-          <option value="Geography">Geography</option>
-          <option value="Computer Science">Computer Science</option>
-        </select>
-      </div>
-    </div>
-  </div>
-  <!-- ===== END SYLLABUS DETAILS ===== -->
+<div class="input-bar">
 
-  <input id="lesson" placeholder="Enter topic (e.g. Cell Structure)">
+<button class="attach-btn" onclick="toggleMenu()">+</button>
 
-  <select id="mode">
-    <option value="board">Board Exam</option>
-    <option value="college">College Exam</option>
-    <option value="short">Short Notes</option>
+<div id="attachMenu" class="attach-menu" style="display:none">
+<label for="noteImage" class="menu-item">📷 Upload Image</label>
+<span class="menu-item" onclick="openCamera()">📸 Capture Photo</span>
+</div>
 
-    {% if plan == "pro" %}
-      <option value="mcq">MCQ Practice</option>
-    {% else %}
-      <option value="locked" disabled>MCQ Practice (Pro)</option>
-    {% endif %}
-  </select>
+<input
+type="file"
+id="noteImage"
+accept="image/*"
+style="display:none"
+onchange="generateFromImage()"
+/>
 
-  <textarea id="user_prompt" rows="6"
-    placeholder="Paste your lesson, textbook paragraph, or study material here...">
-  </textarea>
+<button
+id="generate-btn"
+class="btn-primary"
+onclick="generateNotes()"
+>
+Generate Notes
+</button>
 
+</div>
 
-  <!-- ===== CHATGPT STYLE INPUT BAR ===== -->
-  <div class="input-bar">
+<div id="aiLoader" class="ai-loader" style="display:none">
+<div class="rotator"></div>
+<span>AI is generating notes…</span>
+</div>
 
-    <button class="attach-btn" onclick="toggleMenu()">+</button>
-
-    <div id="attachMenu" class="attach-menu" style="display:none">
-      <label for="noteImage" class="menu-item">📷 Upload Image</label>
-      <span class="menu-item" onclick="openCamera()">📸 Capture Photo</span>
-    </div>
-
-    <input type="file" id="noteImage" accept="image/*"
-           style="display:none" onchange="generateFromImage()">
-
-    <button id="generate-btn" class="btn-primary" onclick="generateNotes()">
-      Generate Notes
-    </button>
-
-  </div>
-
-
-  <!-- ===== LOADER ===== -->
-  <div id="aiLoader" class="ai-loader" style="display:none;">
-    <div class="rotator"></div>
-    <span>AI is generating notes…</span>
-  </div>
-
-  <!-- ===== AI OUTPUT ===== -->
-  <div id="chat" class="chat-container"></div>
+<div id="chat" class="chat-container"></div>
 
 </div>
 
@@ -1053,38 +1030,16 @@ function switchToRegister() {
 
 </div>
 
-<!-- ================= CAMERA SHEET ================= -->
-<div id="cameraOverlay" class="camera-overlay" onclick="closeCamera()"></div>
-
-<div id="cameraSheet" class="camera-sheet">
-
-  <div class="camera-header">
-    <span>Scan with Camera</span>
-    <button onclick="closeCamera()" class="camera-close">✕</button>
-  </div>
-
-  <video id="cameraStream" autoplay playsinline></video>
-
-  <div class="camera-controls">
-    <button class="retake-btn" onclick="closeCamera()">Cancel</button>
-
-    <button class="capture-btn" onclick="capturePhoto()"></button>
-  </div>
-
-  <canvas id="photoCanvas" style="display:none;"></canvas>
-
-</div>
-
-
-
 <footer class="app-footer">
-  <a href="/privacy">Privacy Policy</a>
-  <span>•</span>
-  <a href="/terms">Terms & Conditions</a>
+<a href="/privacy">Privacy Policy</a>
+<span>•</span>
+<a href="/terms">Terms & Conditions</a>
 </footer>
 
 <script>
-// ----- IMAGE OCR GENERATION -----
+
+// ================= IMAGE OCR GENERATION =================
+
 async function generateFromImage() {
 
     let fileInput = document.getElementById("noteImage");
@@ -1095,31 +1050,37 @@ async function generateFromImage() {
     }
 
     let formData = new FormData();
-
     formData.append("image", fileInput.files[0]);
-
-    let mode = document.getElementById("mode").value;
-    formData.append("mode", mode);
 
     let csrf = document.querySelector('meta[name="csrf-token"]').content;
     formData.append("csrf_token", csrf);
 
     document.getElementById("aiLoader").style.display = "flex";
 
-    let res = await fetch("/generate_from_image", {
-        method: "POST",
-        body: formData
-    });
+    try {
+
+        let res = await fetch("/generate_from_image", {
+            method: "POST",
+            body: formData
+        });
+
+        let text = await res.text();
+
+        document.getElementById("chat").innerText = text;
+
+    } catch (err) {
+
+        alert("Image generation failed");
+
+    }
 
     document.getElementById("aiLoader").style.display = "none";
-
-    let text = await res.text();
-
-    document.getElementById("chat").innerText = text;
 }
 
 
-// ----- ATTACH MENU TOGGLE -----
+
+// ================= ATTACH MENU =================
+
 function toggleMenu() {
 
     let menu = document.getElementById("attachMenu");
@@ -1130,6 +1091,9 @@ function toggleMenu() {
         menu.style.display === "none" ? "block" : "none";
 }
 
+
+
+// ================= CAMERA SYSTEM =================
 
 let cameraStreamRef = null;
 
@@ -1150,10 +1114,14 @@ function openCamera() {
     video.srcObject = stream;
 
   }).catch(() => {
+
     alert("Camera not available");
     closeCamera();
+
   });
+
 }
+
 
 function closeCamera() {
 
@@ -1164,7 +1132,9 @@ function closeCamera() {
     cameraStreamRef.getTracks().forEach(t => t.stop());
     cameraStreamRef = null;
   }
+
 }
+
 
 function capturePhoto() {
 
@@ -1186,13 +1156,14 @@ function capturePhoto() {
   });
 
   closeCamera();
+
 }
+
 
 
 async function uploadCapturedImage(file) {
 
     let formData = new FormData();
-
     formData.append("image", file);
 
     let csrf = document.querySelector('meta[name="csrf-token"]').content;
@@ -1200,31 +1171,34 @@ async function uploadCapturedImage(file) {
 
     document.getElementById("aiLoader").style.display = "flex";
 
-    let res = await fetch("/generate_from_image", {
-        method: "POST",
-        body: formData
-    });
+    try {
+
+        let res = await fetch("/generate_from_image", {
+            method: "POST",
+            body: formData
+        });
+
+        let text = await res.text();
+
+        renderNotes(text);
+
+    } catch (err) {
+
+        alert("Upload failed");
+
+    }
 
     document.getElementById("aiLoader").style.display = "none";
 
-    let text = await res.text();
-
-    document.getElementById("chat").innerText = text;
 }
+
+
+
+// ================= GENERATE NOTES =================
 
 async function generateNotes() {
 
-    let board = document.getElementById("board").value;
-    let classLevel = document.getElementById("classLevel").value;
-    let subject = document.getElementById("subject").value;
-
-    if (!board || !classLevel || !subject) {
-        alert("Please select Board, Class/Semester, and Subject before generating notes.");
-        return;
-    }
-
     let lesson = document.getElementById("lesson").value.trim();
-    let mode = document.getElementById("mode").value;
     let userPrompt = document.getElementById("user_prompt").value.trim();
 
     if (!lesson) {
@@ -1235,11 +1209,8 @@ async function generateNotes() {
     let csrf = document.querySelector('meta[name="csrf-token"]').content;
 
     let formData = new FormData();
-    formData.append("board", board);
-    formData.append("class_level", classLevel);
-    formData.append("subject", subject);
+
     formData.append("lesson", lesson);
-    formData.append("mode", mode);
     formData.append("user_prompt", userPrompt);
     formData.append("csrf_token", csrf);
 
@@ -1262,30 +1233,36 @@ async function generateNotes() {
 
         let text = await res.text();
 
-        document.getElementById("chat").innerText = text;
+        renderNotes(text);
 
     } catch (e) {
+
         document.getElementById("aiLoader").style.display = "none";
         alert("Failed to generate notes");
+
     }
+
 }
+
+
+
+// ================= THEME SWITCH =================
 
 function toggleTheme() {
 
     let body = document.body;
 
-    // Toggle light class
     body.classList.toggle("light");
 
-    // Save preference
     if (body.classList.contains("light")) {
         localStorage.setItem("theme", "light");
     } else {
         localStorage.setItem("theme", "dark");
     }
+
 }
 
-// Load saved theme on page load
+
 window.addEventListener("load", () => {
 
     let saved = localStorage.getItem("theme");
@@ -1293,9 +1270,12 @@ window.addEventListener("load", () => {
     if (saved === "light") {
         document.body.classList.add("light");
     }
+
 });
 
-// ================= SIDEBAR MOBILE TOGGLE =================
+
+
+// ================= SIDEBAR =================
 
 function toggleSidebar() {
 
@@ -1304,7 +1284,9 @@ function toggleSidebar() {
 
   sidebar.classList.toggle("open");
   overlay.classList.toggle("active");
+
 }
+
 
 function closeSidebar() {
 
@@ -1313,12 +1295,18 @@ function closeSidebar() {
 
   sidebar.classList.remove("open");
   overlay.classList.remove("active");
+
 }
 
-// ================= UPGRADE REDIRECT =================
+
+
+// ================= PRO REDIRECT =================
+
 function goPro() {
   window.location.href = "/pricing";
 }
+
+
 
 // ================= DELETE NOTE =================
 
@@ -1350,14 +1338,19 @@ document.addEventListener("click", async function (e) {
       return;
     }
 
-    // Remove from UI
     btn.closest("li").remove();
 
   } catch (err) {
+
     alert("Network error while deleting");
+
   }
+
 });
 
+
+
+// ================= PWA INSTALL =================
 
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("/static/sw.js");
@@ -1367,38 +1360,70 @@ let deferredPrompt;
 const installBtn = document.getElementById("installBtn");
 
 window.addEventListener("beforeinstallprompt", (e) => {
+
   e.preventDefault();
   deferredPrompt = e;
 
   if (installBtn) {
     installBtn.style.display = "inline-flex";
   }
+
 });
 
+
 if (installBtn) {
+
   installBtn.addEventListener("click", async () => {
+
     if (!deferredPrompt) return;
 
     deferredPrompt.prompt();
 
     const choice = await deferredPrompt.userChoice;
 
-    if (choice.outcome === "accepted") {
-      console.log("User installed app");
-    }
-
     deferredPrompt = null;
     installBtn.style.display = "none";
+
   });
+
 }
 
 window.addEventListener("appinstalled", () => {
+
   if (installBtn) {
     installBtn.style.display = "none";
   }
+
 });
 
-</script>
+function renderNotes(text) {
 
+    const chat = document.getElementById("chat");
+
+    if (!text) {
+        chat.innerHTML = "<p>No notes generated.</p>";
+        return;
+    }
+
+    // convert markdown-like headings
+    let formatted = text
+        .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+        .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+        .replace(/^# (.*$)/gim, '<h1>$1</h1>');
+
+    // bullet points
+    formatted = formatted.replace(/^\* (.*$)/gim, '<li>$1</li>');
+    formatted = formatted.replace(/(<li>.*<\/li>)/gim, '<ul>$1</ul>');
+
+    // line breaks
+    formatted = formatted.replace(/\n/g, "<br>");
+
+    chat.innerHTML = `
+        <div class="ai-note-card">
+            ${formatted}
+        </div>
+    `;
+}
+</script>
 </body>
 </html>
