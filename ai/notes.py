@@ -50,7 +50,7 @@ Write at least 900 words if possible.
 
 # ================= POEM DETECTION =================
 
-def is_poem_topic(text: str) -> bool:
+def is_poem_topic(text: str):
 
     if not text:
         return False
@@ -103,13 +103,26 @@ POEM:
 
 # ================= NORMAL NOTES PROMPT =================
 
-def notes_prompt(lesson: str):
+def notes_prompt(lesson: str, user_prompt: str = ""):
+
+    extra = ""
+
+    if user_prompt:
+        extra = f"""
+
+Additional study material provided by the student:
+{user_prompt}
+
+Use this material to improve the notes if relevant.
+"""
 
     prompt = f"""
 {SMART_NOTES_RULES}
 
 TOPIC:
 {lesson}
+
+{extra}
 """
 
     return prompt, 0.25, 1200
@@ -162,6 +175,7 @@ STUDENT QUESTION:
 
 def generate_notes_with_groq(
     lesson: str,
+    user_prompt: str = "",
     mode: str = "notes",
     history=None,
     plan: str = "free"
@@ -172,7 +186,6 @@ def generate_notes_with_groq(
 
     mode = mode.lower()
 
-    # token limits
     base_tokens = 900 if plan == "free" else 1600
 
     # -------- Tutor Mode --------
@@ -189,7 +202,7 @@ def generate_notes_with_groq(
 
     # -------- Default Notes --------
     else:
-        prompt, temperature, max_tokens = notes_prompt(lesson)
+        prompt, temperature, max_tokens = notes_prompt(lesson, user_prompt)
 
     max_tokens = min(max_tokens, base_tokens)
 
