@@ -47,25 +47,29 @@ def dashboard():
         usage=usage
     )
 
-
 @notes_bp.route("/generate_stream", methods=["POST"])
 def generate_stream():
+
     if "user_id" not in session:
         return "Unauthorized", 401
+
     verify_csrf()
 
     user_id = session["user_id"]
     plan = get_user_plan(user_id)
 
-    lesson = request.form.get("lesson", "")
-    mode = request.form.get("mode", "board")
-    user_prompt = request.form.get("user_prompt", "")
-    board = request.form.get("board", "")
-    class_level = request.form.get("class_level", "")
-    subject = request.form.get("subject", "")
+    lesson = request.form.get("lesson", "").strip()
+    user_prompt = request.form.get("user_prompt", "").strip()
+    mode = request.form.get("mode", "notes")
 
-    # FREE LIMIT CHECK
+    # ---------- BASIC VALIDATION ----------
+    if not lesson:
+        return "Please enter a topic.", 400
+
+
+    # ---------- FREE PLAN LIMIT ----------
     if plan == "free" and not is_admin():
+
         today_count = Note.query.filter_by(
             user_id=user_id,
             created=date.today()
@@ -74,26 +78,30 @@ def generate_stream():
         if today_count >= 5:
             return "Daily free limit reached. Upgrade to Pro.", 403
 
-    # MCQ MODE – PRO ONLY
+
+    # ---------- PRO FEATURE CHECK ----------
     if mode == "mcq" and plan == "free" and not is_admin():
         return "MCQ mode is Pro only. Upgrade to unlock.", 403
 
+
+    # ---------- AI GENERATION ----------
     try:
+
         output = generate_notes_with_groq(
             lesson=lesson,
-            mode=mode,
             user_prompt=user_prompt,
-            board=board,
-            class_level=class_level,
-            subject=subject,
+            mode=mode,
             plan=plan
         )
+
     except Exception:
-      current_app.logger.exception("Groq API failed in generate_stream")
-      return "AI service temporarily unavailable. Please try again.", 500
+        current_app.logger.exception("Groq API failed in generate_stream")
+        return "AI service temporarily unavailable. Please try again.", 500
 
 
+    # ---------- SAVE NOTE ----------
     try:
+
         new_note = Note(
             user_id=user_id,
             lesson=lesson,
@@ -103,9 +111,12 @@ def generate_stream():
 
         db.session.add(new_note)
         db.session.commit()
+
     except Exception as e:
+
         print("DB Error:", str(e))
         return "Failed to save note in database", 500
+
 
     return Response(output, mimetype="text/plain")
 
